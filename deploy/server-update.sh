@@ -40,10 +40,24 @@ fi
 echo "→ 站点：$SITE"
 echo "→ 当前版本：$(git rev-parse --short HEAD) $(git log -1 --format=%s)"
 
-if [ -n "$(git status --porcelain)" ]; then
+# ---------- 本地改动检查 ----------
+# 只看「被 git 跟踪的文件」，untracked 的 .user.ini / 上传的图片等不该挡住更新
+DIRTY="$(git status --porcelain --untracked-files=no)"
+
+# sync-config.js 是「服务器部署配置」（云同步开关），本地改它属于正常情况：
+# 用 skip-worktree 让 git 长期忽略这个文件的改动，既不会被 pull 覆盖，也不会拦更新
+case "$DIRTY" in
+  *sync-config.js*)
+    git update-index --skip-worktree assets/js/sync-config.js 2>/dev/null || true
+    echo "→ assets/js/sync-config.js 有本地改动（云同步开关），已标记 skip-worktree，保留服务器上的设置"
+    DIRTY="$(git status --porcelain --untracked-files=no)"
+    ;;
+esac
+
+if [ -n "$DIRTY" ]; then
   echo ""
   echo "✗ 检测到本地改动，为避免覆盖已停止更新："
-  git status --short
+  printf '%s\n' "$DIRTY"
   echo ""
   echo "  处理方式（二选一）："
   echo "    git stash && bash deploy/server-update.sh && git stash pop  # 暂存后恢复（可能与新版本冲突）"
@@ -60,6 +74,7 @@ if ! git pull --ff-only origin main; then
   echo "   2) 历史分叉（non-fast-forward）→ git fetch origin && git reset --hard origin/main"
   echo "      ⚠ reset --hard 会丢掉服务器上的所有本地改动，执行前先确认"
   echo "   3) 归属校验（dubious ownership）→ git config --global --add safe.directory $SITE"
+  echo "   4) 提示 sync-config.js 会被覆盖 → 先 git update-index --no-skip-worktree assets/js/sync-config.js"
   exit 1
 fi
 

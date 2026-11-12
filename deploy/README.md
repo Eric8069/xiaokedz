@@ -78,7 +78,9 @@ chown -R www:www .
 ⚠️ **两条约定**（不然更新会卡住）：
 
 - `api/config.php` 已被 `.gitignore` 排除，**服务器上的数据库密码不会被 pull 覆盖**，放心。
-- 但 `assets/js/sync-config.js` 这类**被跟踪的文件不要在服务器上直接改**。要开云同步，请在本地仓库把 `enabled` 改成 `true` 再 `push`，服务器只负责拉。否则脚本会检测到本地改动并停止，提示你 `git stash` 或 `git checkout --`。
+- `assets/js/sync-config.js` 是**服务器部署配置**（云同步开关）。脚本会自动执行 `git update-index --skip-worktree assets/js/sync-config.js`，所以你在服务器上把 `enabled` 改成 `true` 会保留，既不会被 pull 覆盖，也不会拦住更新。
+- 其他被 git 跟踪的文件（`app.js`、`data/*.js`、`main.css` 等）**不要**在服务器上直接改，否则脚本会检测到并停止，提示你 `git stash` 或 `git checkout --`。
+- 宝塔自动生成的 `.user.ini`、上传的临时文件属于未跟踪文件，**不会**挡住更新（脚本只检查被跟踪文件）。
 
 ### 5. 不想用 git 了 / 想换成脚本部署
 
