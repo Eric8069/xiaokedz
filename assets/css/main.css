@@ -122,6 +122,7 @@ code { font-family: var(--mono); font-size: .92em; background: var(--paper-2); p
 .nav a[aria-current="page"][data-page="math"] { background: var(--math); }
 .nav a[aria-current="page"][data-page="english"] { background: var(--en); }
 .nav a[aria-current="page"][data-page="grammar"] { background: var(--gram); }
+.nav a[aria-current="page"][data-page="cheat"] { background: var(--gold); color: #4a3600; }
 .nav a[aria-current="page"][data-page="me"],
 .nav a[aria-current="page"][data-page="about"] { background: var(--ink); }
 

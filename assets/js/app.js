@@ -133,7 +133,7 @@
     left.appendChild(h('h1', { html: '每个知识点，<br>都能<em>动手试一次</em>。' }));
     left.appendChild(h('p', {
       class: 'lead',
-      html: '先猜一猜结果，再拖动滑块看变化，最后用自己的话解释。数学 15 个、英语 8 个、语法 7 个核心知识点，外加 6 张可打印的一页纸总结。'
+      html: '先猜一猜结果，再拖动滑块看变化，最后用自己的话解释。数学 15 个、英语 14 个、语法 7 个核心知识点，外加 11 张可打印的一页纸总结。'
     }));
     var tags = h('div', { class: 'hero-tags' });
     ['先预测', '再操作', '后解释', '自测 3 题', '自动记录进度'].forEach(function (t) {
@@ -1071,6 +1071,7 @@
       });
       main.appendChild(clr);
     }
+    setActive('me');
   }
 
   function streakDays() {
@@ -1129,6 +1130,7 @@
     doc.appendChild(h('p', { style: 'font-size:12.5px;color:var(--muted)' },
       '教学图设计方法参考 Teachable Figures by ywEdAi（https://github.com/ywEdAi/teachable-figures），代码 MIT，书面内容 CC BY 4.0。本站文字与实现为独立创作。'));
     main.appendChild(doc);
+    setActive('about');
   }
 
   /* ---------- 一页纸总结 ---------- */

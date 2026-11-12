@@ -1,6 +1,6 @@
 # 小课桌 · 信阳小学 4-6 年级知识点
 
-人教版小学数学、PEP 英语与语法知识点的**纯静态**互动教材站。每个知识点 = 一页图文讲解 + 一个可以动手做的实验（先预测 → 再操作 → 后解释）+ 3 道自测 + 复习卡片；另有 6 张可打印的**一页纸总结**（表格 ＋ 易错对比 ＋ 6 题带答案）。
+人教版小学数学、PEP 英语与语法知识点的**纯静态**互动教材站。每个知识点 = 一页图文讲解 + 一个可以动手做的实验（先预测 → 再操作 → 后解释）+ 3 道自测 + 复习卡片；另有 11 张可打印的**一页纸总结**（表格 ＋ 易错对比 ＋ 6 题带答案）。
 支持**多档案**：同一台设备上每个孩子一个档案，进度互不干扰，可导出/导入 JSON。
 
 - 无需安装、无需构建、无需数据库，双击 `index.html` 就能打开
@@ -25,15 +25,20 @@ xiaokedz/
 │       └── app.js             # 路由、页面渲染、自测、进度存储
 ├── data/
 │   ├── math.js                # 数学 15 个知识点（内容全在这里）
-│   ├── english.js             # 英语 8 个
+│   ├── english.js             # 英语 14 个
 │   ├── grammar.js             # 语法 7 个
-│   └── summaries.js           # 6 张一页纸总结（速查表）
+│   └── summaries.js           # 11 张一页纸总结（速查表）
 ├── deploy/
-│   └── nginx-site.conf        # 宝塔 nginx 可选优化片段
+│   ├── deploy.sh              # 一键 rsync 部署（含备份、权限、重载）
+│   ├── pack.sh                # 打包 zip，供宝塔上传
+│   ├── rollback.sh            # 回滚到某次备份
+│   ├── deploy.conf.example    # 部署配置模板
+│   ├── nginx-site.conf        # 宝塔 nginx 可选优化片段
+│   └── README.md              # 脚本用法与排错
 └── README.md
 ```
 
-一共 30 个知识点、26 个互动图类型、6 张一页纸总结。所有内容都是 `data/*.js` 里的普通对象，改文字不用碰代码。
+一共 36 个知识点、32 个互动图类型、11 张一页纸总结。所有内容都是 `data/*.js` 里的普通对象，改文字不用碰代码。
 
 页面路由（hash，不需要服务器 rewrite）：
 
@@ -63,6 +68,17 @@ python -m http.server 8080
 ---
 
 ## 三、宝塔 LNMP 部署
+
+### 0. 有脚本，可以一条命令上线
+
+```bash
+cp deploy/deploy.conf.example deploy/deploy.conf   # 填 HOST / USER / DIR
+DRY=1 ./deploy/deploy.sh                           # 先看差异，不真传
+./deploy/deploy.sh                                 # 备份 → 同步 → 权限 → 重载
+```
+
+没有 SSH 权限就打包上传：`./deploy/pack.sh`，然后把 `dist/` 里的压缩包丢进宝塔解压。
+详细说明与排错见 `deploy/README.md`。
 
 ### 1. 建站
 
@@ -161,23 +177,25 @@ find /www/wwwroot/xx.example.com -type f -exec chmod 644 {} \;
 
 ### 可复用的图形类型（`figure.type`）
 
-| 数学 | | 英语 / 语法 | |
+| 数学（15） | | 英语 / 语法（17） | |
 |---|---|---|---|
 | `placevalue` | 数位分级读数 | `clock` | 钟面时间 |
 | `angle` | 量角器 | `preposition` | 方位介词 |
 | `parallel` | 平行线距离 | `shop` | 购物问价 |
-| `areamodel` | 乘法分配律面积模型 | `therebe` | There be |
+| `areamodel` | 乘法分配律面积模型 | `therebe` | There be 句型 |
 | `decimal` | 十分位 / 百分位 | `comparative` | 比较级 |
 | `triangleAngle` | 三角形内角和 | `tense` | 四种时态时间轴 |
 | `average` | 平均数 | `wordform` | 名词复数 / 动词三单 |
-| `parallelogram` | 割补 | `pronoun` | 人称代词表 |
+| `parallelogram` | 割补法 | `pronoun` | 人称代词表 |
 | `pointmove` | 小数点搬家 | `sentence` | 否定句 / 疑问句转换 |
 | `balance` | 天平与等式性质 | `whword` | 特殊疑问词 |
 | `volume` | 长方体体积 | `wordorder` | 语序成句 |
-| `fraction` | 分数与通分 | | |
-| `multiples` | 因数倍数筛 | | |
-| `circle` | 圆滚动 | | |
-| `percent` | 折扣 | | |
+| `fraction` | 分数与通分 | `weather` | 天气 |
+| `multiples` | 因数倍数筛 | `frequency` | 频度副词 |
+| `circle` | 圆滚动量周长 | `date` | 日期序数词 |
+| `percent` | 折扣 | `directions` | 问路走迷宫 |
+| | | `job` | 职业问答 |
+| | | `modal` | 情态动词语气 |
 
 带初始状态的图形，可以加 `state`，例如：
 
@@ -210,7 +228,7 @@ XK.figure('myfigure', function (ctx) {
 
 面向"考前 10 分钟"和"打印带到学校"：口诀开头、表格中间、易错对比压轴、最后 6 题自查。
 
-现成的 6 张：
+现成的 11 张：
 
 | id | 标题 | 科目 |
 |---|---|---|
@@ -220,6 +238,11 @@ XK.figure('myfigure', function (ctx) {
 | `noun` | 名词、代词与冠词 | 语法 |
 | `math-formula` | 数学公式与单位速查 | 数学 |
 | `math-trap` | 数学 15 个高频易错点 | 数学 |
+| `wh` | 特殊疑问词速查 | 英语 |
+| `phrase` | 小学高频短语 60 条 | 英语 |
+| `math-number` | 数与代数总表 | 数学 |
+| `math-geometry` | 图形与几何总表 | 数学 |
+| `stat` | 统计与可能性 | 数学 |
 
 ### 新增一张总结
 

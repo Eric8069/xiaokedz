@@ -883,4 +883,472 @@
     return function () {};
   });
 
+  /* ==========================================================
+     27. 天气 What's the weather like?
+     ========================================================== */
+  XK.figure('weather', function (ctx) {
+    var svg = stage(ctx.stage, '0 0 480 300', '天气图标与英语句型');
+    var g = s('g'); svg.appendChild(g);
+    var w = 'sunny';
+    var city = { en: 'Beijing', zh: '北京' };
+    var CITIES = [
+      { en: 'Beijing', zh: '北京' }, { en: 'Shanghai', zh: '上海' },
+      { en: 'Harbin', zh: '哈尔滨' }, { en: 'Sanya', zh: '三亚' }
+    ];
+    var DATA = {
+      sunny: { adj: 'sunny', zh: '晴朗', tip: 'It is sunny. 适合出去玩。' },
+      cloudy: { adj: 'cloudy', zh: '多云', tip: 'It is cloudy. 云很多，但不一定下雨。' },
+      windy: { adj: 'windy', zh: '有风', tip: 'It is windy. 适合放风筝。' },
+      rainy: { adj: 'rainy', zh: '下雨', tip: 'It is rainy. 记得带伞。' },
+      snowy: { adj: 'snowy', zh: '下雪', tip: 'It is snowy. 可以堆雪人。' }
+    };
+
+    function cloud(cx, cy, sc) {
+      var gg = s('g', { transform: 'translate(' + cx + ',' + cy + ') scale(' + sc + ')' });
+      gg.appendChild(s('ellipse', { cx: -22, cy: 8, rx: 30, ry: 20, fill: '#fff', stroke: '#b8c4d6', 'stroke-width': 1.5 }));
+      gg.appendChild(s('ellipse', { cx: 6, cy: 0, rx: 34, ry: 24, fill: '#fff', stroke: '#b8c4d6', 'stroke-width': 1.5 }));
+      gg.appendChild(s('ellipse', { cx: 32, cy: 10, rx: 24, ry: 17, fill: '#fff', stroke: '#b8c4d6', 'stroke-width': 1.5 }));
+      return gg;
+    }
+
+    function icon() {
+      var gg = s('g');
+      if (w === 'sunny') {
+        var cx = 240, cy = 130;
+        for (var i = 0; i < 8; i++) {
+          var a = i * Math.PI / 4;
+          gg.appendChild(line(cx + 40 * Math.cos(a), cy + 40 * Math.sin(a), cx + 58 * Math.cos(a), cy + 58 * Math.sin(a), { stroke: '#f0b400', w: 4 }));
+        }
+        gg.appendChild(s('circle', { cx: cx, cy: cy, r: 32, fill: '#ffd75e', stroke: '#f0b400', 'stroke-width': 2 }));
+      } else if (w === 'cloudy') {
+        gg.appendChild(cloud(240, 122, 1.25));
+      } else if (w === 'windy') {
+        gg.appendChild(cloud(240, 116, 1.15));
+        [0, 1, 2].forEach(function (i) {
+          gg.appendChild(s('path', {
+            d: 'M 170 ' + (168 + i * 16) + ' q 30 -12 60 0 t 60 0',
+            fill: 'none', stroke: '#7ba7d9', 'stroke-width': 3, 'stroke-linecap': 'round'
+          }));
+        });
+      } else if (w === 'rainy') {
+        gg.appendChild(cloud(240, 112, 1.15));
+        for (var r = 0; r < 4; r++) {
+          var x = 196 + r * 30;
+          gg.appendChild(line(x, 156, x - 10, 186, { stroke: '#3b82f6', w: 3.4 }));
+        }
+      } else {
+        gg.appendChild(cloud(240, 112, 1.15));
+        for (var sn = 0; sn < 4; sn++) {
+          var sx = 198 + sn * 28;
+          gg.appendChild(s('circle', { cx: sx, cy: 172, r: 4.5, fill: '#93b8e8' }));
+          gg.appendChild(s('circle', { cx: sx - 8, cy: 184, r: 4.5, fill: '#93c5fd' }));
+        }
+      }
+      return gg;
+    }
+
+    function draw() {
+      XK.clear(g);
+      g.appendChild(s('rect', { x: 84, y: 28, width: 312, height: 192, rx: 18, fill: '#eef6ff', stroke: '#cfe2f7' }));
+      g.appendChild(icon());
+      g.appendChild(T(240, 250, city.en, { size: 12, fill: C.mut }));
+      g.appendChild(T(240, 278, "It's " + DATA[w].adj + '.', { size: 18, weight: 700, fill: tone(ctx) }));
+    }
+
+    function update() {
+      var d = DATA[w];
+      ctx.set([
+        { k: '问句', v: "What's the weather like in " + city.en + '?' },
+        { k: '答句', v: "It's " + d.adj + '.', big: true },
+        { k: '中文', v: city.zh + '今天' + d.zh + '。' },
+        { k: '还可以说', v: 'a ' + d.adj + ' day（一个' + d.zh + '的日子）' },
+        { k: '', eq: '天气用 It 作主语：It is sunny. 不要说 Today is sunny.' }
+      ]);
+    }
+
+    XK.toggles(ctx.controls, {
+      label: '天气', options: ['sunny', 'cloudy', 'windy', 'rainy', 'snowy'],
+      value: w, onchange: function (v) { w = v; draw(); update(); }
+    });
+    XK.toggles(ctx.controls, {
+      label: '城市', options: CITIES.map(function (c) { return { value: c.en, label: c.en }; }),
+      value: city.en,
+      onchange: function (v) {
+        CITIES.forEach(function (c) { if (c.en === v) city = c; });
+        draw(); update();
+      }
+    });
+
+    draw(); update();
+    return function () {};
+  });
+
+  /* ==========================================================
+     28. 频度副词
+     ========================================================== */
+  XK.figure('frequency', function (ctx) {
+    var svg = stage(ctx.stage, '0 0 480 300', '频度副词在频率尺上的位置');
+    var g = s('g'); svg.appendChild(g);
+    var DATA = [
+      { w: 'always', zh: '总是', p: 100, ex: 'I always get up at 6:30.' },
+      { w: 'usually', zh: '通常', p: 85, ex: 'I usually go to school by bus.' },
+      { w: 'often', zh: '经常', p: 65, ex: 'I often play football after school.' },
+      { w: 'sometimes', zh: '有时', p: 35, ex: 'I sometimes watch TV on Sunday.' },
+      { w: 'never', zh: '从不', p: 0, ex: 'I never go to bed late.' }
+    ];
+    var sel = 0;
+
+    function draw() {
+      XK.clear(g);
+      var x0 = 62, x1 = 418, y = 92;
+      g.appendChild(s('rect', { x: x0, y: y - 6, width: x1 - x0, height: 12, rx: 6, fill: '#efe9dd' }));
+      var cur = DATA[sel];
+      g.appendChild(s('rect', { x: x0, y: y - 6, width: (x1 - x0) * cur.p / 100, height: 12, rx: 6, fill: tone(ctx), opacity: .75 }));
+      DATA.forEach(function (d, i) {
+        var x = x0 + (x1 - x0) * d.p / 100;
+        var on = i === sel;
+        g.appendChild(s('circle', { cx: x, cy: y, r: on ? 9 : 5, fill: on ? tone(ctx) : '#fff', stroke: tone(ctx), 'stroke-width': 2 }));
+        g.appendChild(T(x, y - 24, d.w, { size: on ? 13 : 11.5, weight: on ? 700 : 500, fill: on ? tone(ctx) : C.mut }));
+        g.appendChild(T(x, y + 26, d.p + '%', { size: 10.5, fill: C.faint }));
+      });
+      // 位置示意图
+      var boxY = 176;
+      g.appendChild(T(240, boxY - 12, '副词放在哪里', { size: 11.5, fill: C.mut }));
+      var words = ['主语', 'be 动词 / 助动词', cur.w, '实义动词'];
+      var widths = [64, 128, 96, 96];
+      var total = widths.reduce(function (a, b) { return a + b; }, 0) + 18;
+      var bx = (480 - total) / 2;
+      words.forEach(function (wt, i) {
+        var isAdv = i === 2;
+        g.appendChild(s('rect', {
+          x: bx, y: boxY, width: widths[i], height: 34, rx: 8,
+          fill: isAdv ? soft(ctx) : '#fff', stroke: isAdv ? tone(ctx) : C.line, 'stroke-width': isAdv ? 2 : 1.2
+        }));
+        g.appendChild(T(bx + widths[i] / 2, boxY + 22, wt, { size: 11, weight: isAdv ? 700 : 500, fill: isAdv ? tone(ctx) : C.ink2 }));
+        bx += widths[i] + 6;
+      });
+    }
+
+    function update() {
+      var d = DATA[sel];
+      ctx.set([
+        { k: '频度副词', v: d.w + '（' + d.zh + '）', big: true },
+        { k: '大致频率', v: d.p + '%' },
+        { k: '例句', v: d.ex },
+        { k: '位置', v: '实义动词前；be 动词 / 助动词后' },
+        { k: '', eq: 'I always get up early. / She is always late.' }
+      ]);
+    }
+
+    XK.toggles(ctx.controls, {
+      label: '选一个副词', options: DATA.map(function (d) { return d.w; }),
+      value: DATA[0].w,
+      onchange: function (v) {
+        DATA.forEach(function (d, i) { if (d.w === v) sel = i; });
+        draw(); update();
+      }
+    });
+
+    draw(); update();
+    return function () {};
+  });
+
+  /* ==========================================================
+     29. 日期与序数词
+     ========================================================== */
+  XK.figure('date', function (ctx) {
+    var svg = stage(ctx.stage, '0 0 480 300', '月历卡与英语日期');
+    var g = s('g'); svg.appendChild(g);
+    var MON = ['January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'];
+    var MZH = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'];
+    var m = 5, d = 1;
+    var DAYS = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+    function ordinal(n) {
+      if (n === 1 || n === 21 || n === 31) return 'st';
+      if (n === 2 || n === 22) return 'nd';
+      if (n === 3 || n === 23) return 'rd';
+      return 'th';
+    }
+    function word(n) {
+      var a = ['', 'first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth',
+        'eleventh', 'twelfth', 'thirteenth', 'fourteenth', 'fifteenth', 'sixteenth', 'seventeenth', 'eighteenth', 'nineteenth', 'twentieth'];
+      var b = ['', '', 'twenty', 'thirty'];
+      if (n <= 20) return a[n];
+      if (n === 30) return 'thirtieth';
+      return b[Math.floor(n / 10)] + '-' + a[n % 10];
+    }
+
+    function draw() {
+      XK.clear(g);
+      // 月历卡
+      g.appendChild(s('rect', { x: 96, y: 40, width: 180, height: 190, rx: 16, fill: '#fff', stroke: C.line, 'stroke-width': 1.5 }));
+      g.appendChild(s('rect', { x: 96, y: 40, width: 180, height: 44, rx: 16, fill: tone(ctx) }));
+      g.appendChild(s('rect', { x: 96, y: 68, width: 180, height: 16, fill: tone(ctx) }));
+      g.appendChild(T(186, 69, MON[m - 1], { size: 15, weight: 700, fill: '#fff' }));
+      g.appendChild(T(186, 152, String(d), { size: 58, weight: 700, fill: C.ink }));
+      g.appendChild(T(238, 152, ordinal(d), { size: 20, weight: 700, fill: tone(ctx) }));
+      g.appendChild(T(186, 192, MZH[m - 1] + d + '日', { size: 12, fill: C.mut }));
+      // 右侧说明
+      g.appendChild(T(304, 76, '写法', { size: 10.5, fill: C.mut, anchor: 'start' }));
+      g.appendChild(T(304, 100, MON[m - 1] + ' ' + d + ordinal(d), { size: 14, weight: 700, anchor: 'start' }));
+      g.appendChild(T(304, 138, '读法', { size: 10.5, fill: C.mut, anchor: 'start' }));
+      g.appendChild(T(304, 162, MON[m - 1] + ' the ' + word(d), { size: 12.5, anchor: 'start', fill: C.ink2 }));
+      g.appendChild(T(304, 200, '句型', { size: 10.5, fill: C.mut, anchor: 'start' }));
+      g.appendChild(T(304, 224, "When is your birthday?", { size: 11.5, anchor: 'start', fill: tone(ctx) }));
+      g.appendChild(T(304, 244, "It's in " + MON[m - 1] + '.', { size: 11.5, anchor: 'start', fill: tone(ctx) }));
+    }
+
+    function update() {
+      ctx.set([
+        { k: '英文日期', v: MON[m - 1] + ' ' + d + ordinal(d), big: true },
+        { k: '读作', v: MON[m - 1] + ' the ' + word(d) },
+        { k: '中文', v: MZH[m - 1] + d + '日' },
+        { k: '序数词规则', v: '1st / 2nd / 3rd，其余加 th；11、12、13 都是 th' },
+        { k: '', eq: '具体到某一天用 on：on May 1st；只说月份用 in：in May' }
+      ]);
+    }
+
+    var dayS = null;
+    XK.slider(ctx.controls, {
+      label: '月份', min: 1, max: 12, value: m,
+      format: function (v) { return MON[v - 1]; },
+      oninput: function (v) {
+        m = v;
+        var mx = DAYS[v - 1];
+        if (dayS) {
+          dayS.input.max = mx;
+          if (d > mx) { d = mx; dayS.set(mx, true); }
+        }
+        draw(); update();
+      }
+    });
+    dayS = XK.slider(ctx.controls, {
+      label: '日期', min: 1, max: DAYS[m - 1], value: d, unit: ' 日',
+      oninput: function (v) { d = v; draw(); update(); }
+    });
+
+    draw(); update();
+    return function () {};
+  });
+
+  /* ==========================================================
+     30. 问路与指路
+     ========================================================== */
+  XK.figure('directions', function (ctx) {
+    var svg = stage(ctx.stage, '0 0 480 300', '在街区里按指令走到学校');
+    var g = s('g'); svg.appendChild(g);
+    var pos = { c: 0, r: 2 }, facing = 1; // 0上 1右 2下 3左
+    var log = [];
+    var ARROW = ['↑', '→', '↓', '←'];
+    var cell = 72, ox = 168, oy = 72;
+
+    function cx(c) { return ox + c * cell; }
+    function cy(r) { return oy + r * cell; }
+
+    function draw() {
+      XK.clear(g);
+      // 街区
+      for (var r = 0; r < 3; r++) {
+        for (var c = 0; c < 3; c++) {
+          g.appendChild(s('rect', {
+            x: cx(c) - 24, y: cy(r) - 24, width: 48, height: 48, rx: 8,
+            fill: '#f3eee4', stroke: '#e2dacb'
+          }));
+        }
+      }
+      // 家与学校
+      g.appendChild(s('circle', { cx: cx(0), cy: cy(2), r: 17, fill: '#fff', stroke: C.line, 'stroke-width': 2, 'stroke-dasharray': '4 3' }));
+      g.appendChild(T(cx(0) - 30, cy(2) + 4, '家', { size: 12, weight: 600 }));
+      g.appendChild(s('rect', { x: cx(2) - 18, y: cy(0) - 18, width: 36, height: 36, rx: 8, fill: '#e8f6ec', stroke: '#15803d', 'stroke-width': 2 }));
+      g.appendChild(T(cx(2), cy(0) + 5, '校', { size: 12, weight: 700, fill: '#15803d' }));
+      // 走过的路线
+      if (log.length) {
+        g.appendChild(T(240, 282, log.join(' '), { size: 11.5, fill: C.mut }));
+      }
+      // 人
+      var px = cx(pos.c), py = cy(pos.r);
+      var tri;
+      if (facing === 0) tri = (px) + ',' + (py - 12) + ' ' + (px - 9) + ',' + (py + 8) + ' ' + (px + 9) + ',' + (py + 8);
+      else if (facing === 1) tri = (px + 12) + ',' + py + ' ' + (px - 8) + ',' + (py - 9) + ' ' + (px - 8) + ',' + (py + 9);
+      else if (facing === 2) tri = (px) + ',' + (py + 12) + ' ' + (px - 9) + ',' + (py - 8) + ' ' + (px + 9) + ',' + (py - 8);
+      else tri = (px - 12) + ',' + py + ' ' + (px + 8) + ',' + (py - 9) + ' ' + (px + 8) + ',' + (py + 9);
+      g.appendChild(s('polygon', { points: tri, fill: tone(ctx), stroke: '#fff', 'stroke-width': 2 }));
+      g.appendChild(T(240, 30, '用英语说说怎么走', { size: 11.5, fill: C.mut }));
+    }
+
+    function arrived() { return pos.c === 2 && pos.r === 0; }
+
+    function update() {
+      var rows = [
+        { k: '现在朝向', v: ARROW[facing] + ' ' + ['北', '东', '南', '西'][facing], big: true },
+        { k: '走过的话', v: log.length ? log.join(' ') : '还没出发' }
+      ];
+      if (arrived()) rows.push({ k: '状态', v: '到学校了！Well done!' });
+      else rows.push({ k: '目标', v: '右上角的学校（先向右，再向上）' });
+      rows.push({ k: '', eq: 'Go straight. / Turn left. / Turn right. / At the crossing.' });
+      ctx.set(rows);
+    }
+
+    function step() {
+      var nc = pos.c, nr = pos.r;
+      if (facing === 0) nr--; else if (facing === 1) nc++; else if (facing === 2) nr++; else nc--;
+      if (nc < 0 || nc > 2 || nr < 0 || nr > 2) return;
+      pos.c = nc; pos.r = nr;
+      log.push('Go straight.');
+      draw(); update();
+    }
+    function turn(d) {
+      facing = (facing + (d > 0 ? 1 : 3)) % 4;
+      log.push(d > 0 ? 'Turn right.' : 'Turn left.');
+      draw(); update();
+    }
+
+    var row1 = h('div', { class: 'btn-row' });
+    ctx.controls.appendChild(row1);
+    XK.button(row1, { label: '↑ 向前走', onClick: step });
+    XK.button(row1, { label: '← 左转', onClick: function () { turn(-1); } });
+    XK.button(row1, { label: '→ 右转', onClick: function () { turn(1); } });
+    XK.button(ctx.controls, {
+      label: '回到起点', cls: 'ghost', onClick: function () {
+        pos = { c: 0, r: 2 }; facing = 1; log = []; draw(); update();
+      }
+    });
+
+    draw(); update();
+    return function () {};
+  });
+
+  /* ==========================================================
+     31. 职业 What does he do?
+     ========================================================== */
+  XK.figure('job', function (ctx) {
+    var svg = stage(ctx.stage, '0 0 480 300', '不同职业的人物与问答');
+    var g = s('g'); svg.appendChild(g);
+    var JOBS = [
+      { en: 'doctor', zh: '医生', place: 'a hospital', placeZh: '医院' },
+      { en: 'teacher', zh: '老师', place: 'a school', placeZh: '学校' },
+      { en: 'driver', zh: '司机', place: 'a bus company', placeZh: '公交公司' },
+      { en: 'cook', zh: '厨师', place: 'a restaurant', placeZh: '饭店' },
+      { en: 'farmer', zh: '农民', place: 'a farm', placeZh: '农场' },
+      { en: 'police officer', zh: '警察', place: 'a police station', placeZh: '警察局' }
+    ];
+    var sel = 0;
+
+    function draw() {
+      XK.clear(g);
+      var j = JOBS[sel];
+      // 人物
+      var cx = 166;
+      g.appendChild(s('circle', { cx: cx, cy: 88, r: 34, fill: '#f7e3cc', stroke: '#c99e73', 'stroke-width': 2 }));
+      g.appendChild(s('path', { d: 'M ' + (cx - 30) + ' 244 q 30 -76 60 0 z', fill: tone(ctx), opacity: .85 }));
+      g.appendChild(s('rect', { x: cx - 30, y: 134, width: 60, height: 84, rx: 14, fill: tone(ctx), opacity: .9 }));
+      g.appendChild(line(cx - 30, 152, cx - 54, 196, { stroke: '#f7e3cc', w: 10 }));
+      g.appendChild(line(cx + 30, 152, cx + 54, 196, { stroke: '#f7e3cc', w: 10 }));
+      // 职业标签
+      g.appendChild(s('rect', { x: 226, y: 92, width: 190, height: 92, rx: 14, fill: soft(ctx), stroke: tone(ctx), 'stroke-width': 1.5 }));
+      g.appendChild(T(321, 122, j.en, { size: 18, weight: 700, fill: tone(ctx) }));
+      g.appendChild(T(321, 148, j.zh, { size: 12, fill: C.mut }));
+      g.appendChild(T(321, 168, 'works in ' + j.place, { size: 11, fill: C.ink2 }));
+      g.appendChild(T(240, 280, "What does he do? — He's a " + j.en + '.', { size: 13, weight: 600, fill: C.ink }));
+    }
+
+    function update() {
+      var j = JOBS[sel];
+      ctx.set([
+        { k: '问职业', v: 'What does he do?', big: true },
+        { k: '答句', v: "He's a " + j.en + '. (= ' + j.zh + ')' },
+        { k: '问工作地点', v: 'Where does he work?' },
+        { k: '答句', v: 'He works in ' + j.place + '.' },
+        { k: '', eq: '主语是 he / she 时，用 does 提问、动词加 s（works）' }
+      ]);
+    }
+
+    XK.toggles(ctx.controls, {
+      label: '换一个职业', options: JOBS.map(function (j) { return j.en; }),
+      value: JOBS[0].en,
+      onchange: function (v) {
+        JOBS.forEach(function (j, i) { if (j.en === v) sel = i; });
+        draw(); update();
+      }
+    });
+
+    draw(); update();
+    return function () {};
+  });
+
+  /* ==========================================================
+     32. 情态动词 can / must / should
+     ========================================================== */
+  XK.figure('modal', function (ctx) {
+    var svg = stage(ctx.stage, '0 0 480 300', '三个情态动词的语气强度');
+    var g = s('g'); svg.appendChild(g);
+    var DATA = {
+      can: { zh: '能、会', neg: "can't", level: 1, tip: '表示能力或许可', ex: 'I can swim.' },
+      should: { zh: '应该', neg: "shouldn't", level: 2, tip: '表示建议，语气中等', ex: 'You should do your homework.' },
+      must: { zh: '必须', neg: "mustn't", level: 3, tip: '表示必须或规定，语气最强', ex: 'You must wear a helmet.' }
+    };
+    var VERB = {
+      can: { v: 'swim', zh: '游泳' },
+      should: { v: 'do your homework', zh: '做作业' },
+      must: { v: 'wear a helmet', zh: '戴头盔' }
+    };
+    var m = 'must';
+
+    function draw() {
+      XK.clear(g);
+      var d = DATA[m];
+      // 强度柱
+      var bx = 58, by = 250, bw = 50, gap = 18;
+      [1, 2, 3].forEach(function (lv, i) {
+        var hgt = 30 * lv;
+        var on = lv === d.level;
+        g.appendChild(s('rect', {
+          x: bx + i * (bw + gap), y: by - hgt, width: bw, height: hgt, rx: 8,
+          fill: on ? tone(ctx) : '#efe9dd', opacity: on ? .92 : 1
+        }));
+      });
+      ['can', 'should', 'must'].forEach(function (nm, i) {
+        g.appendChild(T(bx + i * (bw + gap) + bw / 2, by + 18, nm, {
+          size: 11, weight: 600, fill: d.level === i + 1 ? tone(ctx) : C.mut
+        }));
+      });
+      g.appendChild(T(bx, 124, '语气由弱到强 →', { size: 10.5, fill: C.faint, anchor: 'start' }));
+
+      // 句子卡
+      g.appendChild(s('rect', { x: 250, y: 52, width: 192, height: 142, rx: 14, fill: '#fff', stroke: C.line }));
+      g.appendChild(T(346, 80, '例句', { size: 10.5, fill: C.mut }));
+      var words = d.ex.split(' ');
+      var line1 = '', line2 = '';
+      var acc = 0;
+      words.forEach(function (w2) {
+        if (acc + w2.length * 7.0 > 166 && line1) { line2 += w2 + ' '; } else { line1 += w2 + ' '; acc += w2.length * 7.0; }
+      });
+      g.appendChild(T(346, 114, line1.trim(), { size: 12.5, weight: 600, fill: C.ink }));
+      if (line2) g.appendChild(T(346, 140, line2.trim(), { size: 12.5, weight: 600, fill: C.ink }));
+      g.appendChild(T(346, 172, d.tip, { size: 9.5, fill: C.mut }));
+      g.appendChild(T(240, 286, '情态动词后面永远接动词原形', { size: 11, fill: C.faint }));
+    }
+
+    function update() {
+      var d = DATA[m];
+      ctx.set([
+        { k: '情态动词', v: m + '（' + d.zh + '）', big: true },
+        { k: '例句', v: d.ex },
+        { k: '否定形式', v: d.neg },
+        { k: '用法', v: d.tip },
+        { k: '', eq: 'can / must / should 后面都跟动词原形，不加 s、不加 ed' }
+      ]);
+    }
+
+    XK.toggles(ctx.controls, {
+      label: '换一个', options: ['can', 'should', 'must'],
+      value: m, onchange: function (v) { m = v; draw(); update(); }
+    });
+
+    draw(); update();
+    return function () {};
+  });
+
 })();

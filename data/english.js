@@ -508,5 +508,387 @@ window.POINTS = (window.POINTS || []).concat([
     { f: 'will 的否定', b: 'won\'t（will not）' }
   ]
 }
+,
+/* ------------------------------------------------------------------ 9 */
+{
+  id: 'e4-09', subject: 'english', grade: 4, term: '下', unit: 'Unit 3 Weather',
+  title: '天气与季节：What\'s the weather like?',
+  tags: ['天气', 'weather', 'sunny', '季节'],
+  goal: '会用 What\'s the weather like? 问天气，用 It\'s sunny / rainy / cold. 回答，并能说出冷热该穿什么。',
+  sections: [
+    { h: '问天气的两个句子',
+      p: '问某地天气：<b>What\'s the weather like in Beijing?</b> 也可以说 <b>How\'s the weather?</b> 回答统一用 <b>It\'s + 天气词</b>。' },
+    { h: '天气词表',
+      table: {
+        head: ['词', '中文', '例句'],
+        rows: [
+          ['sunny', '晴朗的', 'It\'s sunny today.'],
+          ['cloudy', '多云的', 'It\'s cloudy in Shanghai.'],
+          ['windy', '有风的', 'It\'s windy outside.'],
+          ['rainy', '下雨的', 'It\'s rainy in summer.'],
+          ['snowy', '下雪的', 'It\'s snowy in Harbin.'],
+          ['hot / cold', '热的 / 冷的', 'It\'s hot in Sanya.'],
+          ['warm / cool', '暖和的 / 凉爽的', 'It\'s cool in autumn.']
+        ]
+      },
+      note: { type: 'tip', text: '天气词大多由名词加 <b>-y</b> 变来：rain → rainy，wind → windy，snow → snowy，cloud → cloudy。' } },
+    { h: '冷热与穿衣',
+      p: '冷热用 hot、cold、warm、cool。提醒别人穿衣：<b>Put on your coat.</b> 脱下：<b>Take off your hat.</b> 注意 put on 和 take off 的宾语如果是代词，要放中间：put it on。' },
+    { h: '最容易错的地方',
+      note: { type: 'warn', text: '天气的主语是 <b>it</b>：It is sunny. 不能说 Today is sunny. / The weather is sunny today 虽然也对，但小学阶段统一用 It。' } }
+  ],
+  figure: {
+    type: 'weather', state: { w: 'rainy' },
+    title: '换城市、换天气，句子跟着变',
+    lead: '选一种天气，看问句和答句怎么变。',
+    predict: {
+      q: '问天气时，答句的主语应该用：',
+      options: ['Today', 'It', 'The weather is'],
+      answer: 1,
+      why: '英语里谈天气固定用 it 作主语：It is sunny. 说成 Today is sunny 是中式英语。'
+    },
+    insight: '问天气是 <b>What\'s the weather like?</b>，答句永远是 <b>It\'s + 天气词</b>，句式不变，只换形容词。',
+    frame: 'What\'s the weather like in （　）? — It\'s （　）.',
+    hint: '把天气切到 snowy，再想想哈尔滨的冬天。'
+  },
+  example: {
+    q: '看图回答：北京今天下雨，上海多云。用英语各说一句。',
+    steps: [
+      '先确定主语用 It。',
+      '北京下雨：It\'s rainy in Beijing.',
+      '上海多云：It\'s cloudy in Shanghai.'
+    ],
+    a: 'It\'s rainy in Beijing. It\'s cloudy in Shanghai.'
+  },
+  quiz: [
+    { q: '___ the weather like in Beijing?', options: ['What\'s', 'How', 'Where\'s'], answer: 0,
+      why: '问天气的固定句型是 What\'s the weather like…?' },
+    { q: 'It\'s ___. Take your umbrella.', options: ['sunny', 'rainy', 'windy'], answer: 1,
+      why: '要带伞说明在下雨，用 rainy。' },
+    { q: '下面哪句是对的？', options: ['Today is sunny.', 'It is sunny today.', 'It sunny today.'], answer: 1,
+      why: '天气用 it 作主语，且要有 be 动词。' }
+  ],
+  cards: [
+    { f: '问天气', b: 'What\'s the weather like in…? / How\'s the weather?' },
+    { f: '答天气', b: 'It\'s sunny / rainy / windy / snowy / cloudy.' },
+    { f: '天气词怎么来的？', b: '名词加 -y：rain → rainy，wind → windy。' }
+  ]
+},
+
+/* ------------------------------------------------------------------ 10 */
+{
+  id: 'e5-10', subject: 'english', grade: 5, term: '上', unit: 'Unit 2 My week',
+  title: '频度副词：always 到 never',
+  tags: ['频度副词', 'always', 'usually', 'often', 'sometimes', 'never'],
+  goal: '能按频率从高到低排列五个频度副词，并把它们放在句子里正确的位置。',
+  sections: [
+    { h: '五个副词，一条尺子',
+      p: '把它们想成一条从 100% 到 0% 的尺子：<b>always</b>（总是，100%）→ <b>usually</b>（通常，约 85%）→ <b>often</b>（经常，约 65%）→ <b>sometimes</b>（有时，约 35%）→ <b>never</b>（从不，0%）。' },
+    { h: '位置只有两条规则',
+      ul: [
+        '<b>实义动词前</b>：I <b>always</b> get up at 6:30. / She <b>often</b> plays football.',
+        '<b>be 动词、助动词后</b>：She is <b>always</b> late. / I don\'t <b>usually</b> eat out.'
+      ],
+      note: { type: 'warn', text: '不要说 I get up always at 6:30，也不要说 She always is late。位置错了意思还是那个意思，但一听就不地道。' } },
+    { h: '问频率',
+      p: '<b>How often do you…?</b> 回答可以用频度副词，也可以说具体次数：Twice a week.（一周两次）' },
+    { h: '和一般现在时绑在一起',
+      p: '频度副词描述的是"经常发生"的习惯，所以句子用<b>一般现在时</b>。主语是 he / she / it 时，动词要加 s。' }
+  ],
+  figure: {
+    type: 'frequency',
+    title: '把副词放到频率尺上',
+    lead: '点一个副词，看它在 0–100% 上的位置和句子里的位置。',
+    predict: {
+      q: '"我总是 6:30 起床"，always 应该放在哪里？',
+      options: ['I get up always at 6:30.', 'I always get up at 6:30.', 'Always I get up at 6:30.'],
+      answer: 1,
+      why: '频度副词放在实义动词 get up 的前面。'
+    },
+    insight: '位置口诀：<b>实义动词前，be 动词后</b>。记住这两条，五个副词都不会放错。',
+    frame: 'I （　） get up at 6:30.（总是）',
+    hint: '切到 never，看它在 0% 的位置，句子里的位置却不变。'
+  },
+  example: {
+    q: '用 usually 改写：I go to school by bus.（我通常坐公交上学）',
+    steps: [
+      'go 是实义动词，usually 放在它前面。',
+      '主语 I 不是三单，动词不变。',
+      'I usually go to school by bus.'
+    ],
+    a: 'I usually go to school by bus.'
+  },
+  quiz: [
+    { q: 'She ___ late for school.', options: ['always is', 'is always', 'always'], answer: 1,
+      why: 'be 动词后面放频度副词：is always late。' },
+    { q: '频率最高的是：', options: ['often', 'usually', 'always'], answer: 2,
+      why: 'always 是 100%，usually 约 85%，often 约 65%。' },
+    { q: 'He ___ plays football after school.', options: ['often', 'often is', 'is often'], answer: 0,
+      why: '实义动词 plays 前面用 often。' }
+  ],
+  cards: [
+    { f: '五个频度副词排序', b: 'always > usually > often > sometimes > never' },
+    { f: '位置规则', b: '实义动词前，be 动词 / 助动词后。' },
+    { f: '问频率', b: 'How often do you…? — Twice a week.' }
+  ]
+},
+
+/* ------------------------------------------------------------------ 11 */
+{
+  id: 'e5-11', subject: 'english', grade: 5, term: '下', unit: 'Unit 3 My school calendar',
+  title: '日期与序数词',
+  tags: ['日期', '序数词', 'month', 'birthday'],
+  goal: '会写出和读出英语日期（May 1st），知道什么时候用 in、什么时候用 on。',
+  sections: [
+    { h: '十二个月先背熟',
+      p: 'January、February、March、April、May、June、July、August、September、October、November、December。月份首字母<b>永远大写</b>。' },
+    { h: '日期要用序数词',
+      table: {
+        head: ['规律', '例子'],
+        rows: [
+          ['一般加 -th', 'four → fourth（4th），six → sixth（6th）'],
+          ['1、2、3 特殊', 'one → first（1st），two → second（2nd），three → third（3rd）'],
+          ['8、9、12 去字母再加', 'eight → eighth，nine → ninth，twelve → twelfth'],
+          ['几十几，只变个位', 'twenty-one → twenty-first（21st）'],
+          ['11、12、13 都是 -th', 'eleventh、twelfth、thirteenth']
+        ]
+      } },
+    { h: '写法与读法',
+      p: '写：<b>May 1st</b> 或 <b>May 1</b>；读：<b>May the first</b>。中文的"5月1日"在英语里是"月份在前、日期在后"，和中文顺序相反。' },
+    { h: 'in 还是 on',
+      note: { type: 'tip', text: '只说月份用 <b>in</b>：in May；具体到某一天用 <b>on</b>：on May 1st。这一点和中文习惯不一样，考试常考。' },
+      p: '问生日：<b>When is your birthday?</b> — <b>It\'s in May.</b> / <b>It\'s on May 1st.</b>' }
+  ],
+  figure: {
+    type: 'date', state: { m: 5, d: 1 },
+    title: '翻日历，读日期',
+    lead: '调月份和日期，看英文写法和序数词怎么变。',
+    predict: {
+      q: '5 月 1 日的英文写法是：',
+      options: ['May 1th', 'May 1st', 'May 1rd'],
+      answer: 1,
+      why: '1 的序数词是 first，缩写是 1st。只有 2 是 2nd、3 是 3rd，其余都是 th。'
+    },
+    insight: '序数词缩写看<b>最后一个数字</b>：1→st、2→nd、3→rd，但 11、12、13 例外，都是 th。',
+    frame: 'My birthday is （　） May.（只说到月份）',
+    hint: '把日期调到 21，看是不是 21st 而不是 21th。'
+  },
+  example: {
+    q: '用英语写出并读出：5 月 1 日、3 月 8 日、12 月 25 日。',
+    steps: [
+      '5 月 1 日 → May 1st，读 May the first。',
+      '3 月 8 日 → March 8th，读 March the eighth（eight 去 t 加 th）。',
+      '12 月 25 日 → December 25th，读 December the twenty-fifth。'
+    ],
+    a: 'May 1st / March 8th / December 25th'
+  },
+  quiz: [
+    { q: '3 的序数词缩写是：', options: ['3th', '3rd', '3st'], answer: 1,
+      why: 'three → third，缩写 3rd。' },
+    { q: 'My birthday is ___ October.', options: ['in', 'on', 'at'], answer: 0,
+      why: '只说月份，用 in。' },
+    { q: 'Children\'s Day is ___ June 1st.', options: ['in', 'on', 'at'], answer: 1,
+      why: '具体到某一天，用 on。' }
+  ],
+  cards: [
+    { f: '1、2、3 的序数词', b: 'first (1st)、second (2nd)、third (3rd)' },
+    { f: '11、12、13 有什么特别？', b: '都是 -th：11th、12th、13th，不是 11st。' },
+    { f: 'in 还是 on？', b: '月份用 in，具体某天用 on。' }
+  ]
+},
+
+/* ------------------------------------------------------------------ 12 */
+{
+  id: 'e5-14', subject: 'english', grade: 5, term: '上', unit: 'Unit 4 What can you do?',
+  title: '情态动词 can / must / should',
+  tags: ['情态动词', 'can', 'must', 'should'],
+  goal: '掌握 can、must、should 的意思和用法，知道它们后面都跟动词原形，并会写否定形式。',
+  sections: [
+    { h: '三个词，三种语气',
+      table: {
+        head: ['情态动词', '意思', '用法', '例句'],
+        rows: [
+          ['can', '能、会', '能力；也可以表示许可', 'I can swim. / Can I go out?'],
+          ['should', '应该', '提建议，语气中等', 'You should do your homework.'],
+          ['must', '必须', '规定、必须做，语气最强', 'You must wear a helmet.']
+        ]
+      } },
+    { h: '否定形式要记牢',
+      p: '<b>can\'t</b>（不会 / 不可以）、<b>shouldn\'t</b>（不应该）、<b>mustn\'t</b>（禁止）。注意 mustn\'t 不是"不必"，"不必"是 don\'t have to。' },
+    { h: '后面永远跟原形',
+      p: '<span class="hl">can / must / should 后面直接跟动词原形</span>，不加 s、不加 ed、不加 ing。这一点和助动词一样。' },
+    { h: '换个说法',
+      p: 'can 的疑问句把 can 提前：Can you swim? — Yes, I can. / No, I can\'t. must 和 should 同理：Should I go? / Must I finish it now?' },
+    { h: '易错点',
+      note: { type: 'warn', text: 'He can swims. ✗ → He can swim. ✓ 主语是三单也不影响，因为情态动词已经"管住"了动词形式。' } }
+  ],
+  figure: {
+    type: 'modal', state: { m: 'must' },
+    title: '语气由弱到强',
+    lead: '切换三个情态动词，看句子、否定和语气强度。',
+    predict: {
+      q: 'must 后面的动词应该用什么形式？',
+      options: ['加 s', '用原形', '加 ing'],
+      answer: 1,
+      why: '情态动词后面的动词一律用原形：You must wear a helmet.'
+    },
+    insight: '情态动词像一个"盖子"，盖住后面的动词，让它只能是<b>原形</b>。',
+    frame: 'You （　） wear a helmet.（必须）',
+    hint: '切到 should，感受一下语气从"必须"变成"建议"。'
+  },
+  example: {
+    q: '用 must 改写：You wear a helmet. 并改成否定句。',
+    steps: [
+      'must 后面跟动词原形 wear。',
+      '肯定：You must wear a helmet.',
+      '否定：must 后面加 not，缩写成 mustn\'t。'
+    ],
+    a: 'You must wear a helmet. / You mustn\'t wear a helmet.'
+  },
+  quiz: [
+    { q: 'She can ___ very well.', options: ['sings', 'sing', 'singing'], answer: 1,
+      why: 'can 后面跟动词原形。' },
+    { q: 'You ___ cross the road when the light is red.', options: ['must', 'mustn\'t', 'can'], answer: 1,
+      why: '红灯不能过马路，用 mustn\'t 表示禁止。' },
+    { q: 'should 的否定形式是：', options: ['shouldn\'t', 'don\'t should', 'not should'], answer: 0,
+      why: '直接在 should 后面加 not，缩写成 shouldn\'t。' }
+  ],
+  cards: [
+    { f: '三个情态动词的语气', b: 'can（能力）< should（建议）< must（必须）' },
+    { f: '后面跟什么？', b: '一律跟动词原形。' },
+    { f: 'mustn\'t 和 don\'t have to', b: 'mustn\'t 是禁止；don\'t have to 是不必。' }
+  ]
+},
+
+/* ------------------------------------------------------------------ 13 */
+{
+  id: 'e6-12', subject: 'english', grade: 6, term: '上', unit: 'Unit 1 How can I get there?',
+  title: '问路与指路',
+  tags: ['问路', 'turn left', 'go straight', 'crossing'],
+  goal: '会用 How can I get to…? 问路，用 Go straight / Turn left / Turn right 指路。',
+  sections: [
+    { h: '怎么问',
+      p: '<b>How can I get to the museum?</b>（我怎么去博物馆？）也可以说 <b>Where is the museum?</b> 或者 <b>Is there a museum near here?</b>' },
+    { h: '指路四句话',
+      table: {
+        head: ['英语', '中文', '用法'],
+        rows: [
+          ['Go straight.', '一直往前走。', '直行'],
+          ['Turn left.', '向左转。', '第一个路口左转'],
+          ['Turn right.', '向右转。', '第一个路口右转'],
+          ['At the crossing.', '在十字路口。', '常和 turn 连用'],
+          ['It\'s next to…', '它在……旁边。', '补充位置'],
+          ['It\'s between A and B.', '在 A 和 B 之间。', '两个参照物']
+        ]
+      },
+      note: { type: 'tip', text: 'left / right 是副词，前面不加介词：Turn left. 不说 Turn to left。' } },
+    { h: '礼貌一点',
+      p: '开头加 <b>Excuse me</b>，结尾说 <b>Thank you</b>。别人道谢时回答 <b>You\'re welcome.</b> 这三句是真实场景里最有用的。' },
+    { h: '易错点',
+      note: { type: 'warn', text: 'go straight 里 straight 是副词，不能写成 straightly；turn left / right 也不加 to。' } }
+  ],
+  figure: {
+    type: 'directions',
+    title: '按指令走到学校',
+    lead: '点"向前走 / 左转 / 右转"，把小人从家带到学校。',
+    predict: {
+      q: '"一直往前走"用英语怎么说？',
+      options: ['Go straight.', 'Go straightly.', 'Go to straight.'],
+      answer: 0,
+      why: 'straight 本身就是副词，不需要加 -ly，也不加 to。'
+    },
+    insight: '指路就是把三个动作串起来：<b>先直走，到路口再转弯</b>。句型都很短，说慢一点对方反而更清楚。',
+    frame: 'Excuse me, how can I get to the school? — （　） straight and （　） left.',
+    hint: '先从家向右走两步，再左转向上，就能到学校。'
+  },
+  example: {
+    q: '把路线说成英语：从家出发，向右走，然后左转，一直走到学校。',
+    steps: [
+      '起步：Go straight.',
+      '到路口左转：Turn left at the crossing.',
+      '继续直走：Go straight again. The school is on your right.'
+    ],
+    a: 'Go straight. Turn left at the crossing. Go straight again. The school is on your right.'
+  },
+  quiz: [
+    { q: '___ left at the crossing.', options: ['Turn', 'Go', 'Take'], answer: 0,
+      why: '转弯用 turn：Turn left / Turn right。' },
+    { q: 'How can I get ___ the park?', options: ['to', 'at', 'in'], answer: 0,
+      why: 'get to 表示"到达"。' },
+    { q: 'It\'s ___ the bank and the shop.', options: ['between', 'next', 'behind'], answer: 0,
+      why: '在两者之间用 between A and B。' }
+  ],
+  cards: [
+    { f: '问路', b: 'How can I get to…? / Where is…?' },
+    { f: '三个指路短语', b: 'Go straight. / Turn left. / Turn right.' },
+    { f: 'left 前要加 to 吗？', b: '不加：Turn left. 不是 Turn to left。' }
+  ]
+},
+
+/* ------------------------------------------------------------------ 14 */
+{
+  id: 'e6-13', subject: 'english', grade: 6, term: '上', unit: 'Unit 5 What does he do?',
+  title: '职业：What does he do?',
+  tags: ['职业', 'job', 'does', '三单'],
+  goal: '会问别人的职业和工作地点，并能用 He\'s a… / He works in… 回答，注意三单形式。',
+  sections: [
+    { h: '两个问句',
+      p: '问职业：<b>What does he do?</b> = <b>What\'s his job?</b> 问工作地点：<b>Where does he work?</b> 注意主语是 he / she，所以用 <b>does</b>，不用 do。' },
+    { h: '常见职业',
+      table: {
+        head: ['职业', '中文', '工作地点'],
+        rows: [
+          ['doctor', '医生', 'in a hospital'],
+          ['teacher', '老师', 'in a school'],
+          ['driver', '司机', 'in a bus company'],
+          ['cook', '厨师', 'in a restaurant'],
+          ['farmer', '农民', 'on a farm'],
+          ['police officer', '警察', 'in a police station'],
+          ['singer', '歌手', 'on a stage'],
+          ['writer', '作家', 'at home']
+        ]
+      } },
+    { h: '回答时的三单',
+      p: 'He <b>works</b> in a hospital.（work 加 s）She <b>teaches</b> English.（teach 加 es）。否定和疑问里动词回原形：He doesn\'t work here. / Does he work here?' },
+    { h: '问"你将来想做什么"',
+      p: '<b>What do you want to be?</b> — <b>I want to be a doctor.</b> 注意这里主语是 you，用 do，不用 does。' }
+  ],
+  figure: {
+    type: 'job',
+    title: '换职业，换句子',
+    lead: '选一个职业，看问句、答句和工作地点怎么变。',
+    predict: {
+      q: 'What ___ he do?',
+      options: ['do', 'does', 'is'],
+      answer: 1,
+      why: '主语 he 是第三人称单数，助动词用 does，后面动词用原形 do。'
+    },
+    insight: '问职业用 <b>does</b> 是因为主语是 he / she；一旦用了 does，后面的动词就回到原形。',
+    frame: 'What does he do? — He\'s a （　）.',
+    hint: '切到 cook，注意工作地点用的是 in a restaurant。'
+  },
+  example: {
+    q: '根据提示写两句话：Tom 的爸爸是医生，在医院工作。',
+    steps: [
+      '问职业用 He\'s a doctor.',
+      '工作地点用 He works in a hospital.（work 加 s）',
+      '两句都用 he 作主语，动词要注意三单。'
+    ],
+    a: 'He\'s a doctor. He works in a hospital.'
+  },
+  quiz: [
+    { q: 'What ___ your mother do?', options: ['do', 'does', 'is'], answer: 1,
+      why: 'your mother 相当于 she，用 does。' },
+    { q: 'He ___ in a school.', options: ['work', 'works', 'working'], answer: 1,
+      why: '主语 he 是三单，动词加 s。' },
+    { q: '— What\'s his job? — ___', options: ['He\'s a driver.', 'He\'s driving.', 'He driver.'], answer: 0,
+      why: '问职业回答"他是……"，用 He\'s a + 职业。' }
+  ],
+  cards: [
+    { f: '问职业', b: 'What does he do? / What\'s his job?' },
+    { f: '问工作地点', b: 'Where does he work? — He works in…' },
+    { f: '三单要注意什么？', b: 'does 提问、works 加 s，用了 does 就回原形。' }
+  ]
+}
 
 ]);

@@ -1,0 +1,23 @@
+# 小课桌部署配置（复制为 deploy.conf 后填写）
+# 这个文件里有服务器信息，不要提交到公开仓库（默认已被 .gitignore 忽略）
+
+# 服务器地址（IP 或域名），必填
+HOST=1.2.3.4
+
+# SSH 用户，宝塔一般用 root
+USER=root
+
+# SSH 端口
+PORT=22
+
+# 站点根目录。宝塔建站后一般是 /www/wwwroot/你的域名
+DIR=/www/wwwroot/xiaokedz
+
+# 上传后的属主，宝塔用 www:www
+OWNER=www:www
+
+# 是否在部署后自动重载 nginx（1=是，0=否）
+RELOAD_NGINX=1
+
+# 服务器上保留几份备份
+KEEP_BACKUP=5
