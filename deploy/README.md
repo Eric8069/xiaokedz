@@ -1,18 +1,98 @@
 # 部署脚本说明
 
-三种部署方式，按你的习惯选一种。都是把 `index.html + assets/ + data/ + api/` 传到站点根目录，没有编译、没有依赖。
+四种部署方式，按你的习惯选一种。都是把 `index.html + assets/ + data/ + api/` 传到站点根目录，没有编译、没有依赖。
 
 | 方式 | 适合 | 命令 |
 |---|---|---|
-| **一键 rsync**（推荐） | 有服务器 SSH，改完就想上线 | `./deploy/deploy.sh` |
-| **打包上传** | 只有宝塔面板权限，或服务器在内网 | `./deploy/pack.sh` 然后面板上传解压 |
+| **服务器上 git clone** | 首次部署、想在服务器上直接拉 GitHub，以后一行 `git pull` 更新 | 见第一节 |
+| **一键 rsync**（改代码最省事） | 有服务器 SSH，改完就想上线 | `./deploy/deploy.sh` |
+| **打包上传** | 只有宝塔面板权限、服务器连不上 GitHub、或服务器在内网 | `./deploy/pack.sh` 然后面板上传解压 |
 | **手动拖拽** | 只装一次，以后很少改 | 直接把文件拖进宝塔文件管理器 |
 
 > `api/` 是可选的云同步后端。不用这个功能也完全可以部署，站点仍是纯静态。
 
 ---
 
-## 一、一键部署 `deploy.sh`
+## 一、服务器上直接 git clone（宝塔终端）
+
+适合：宝塔面板能开「终端」（或用 SSH 连服务器），且服务器能访问 `github.com`。
+
+### 1. 打开终端，确认 git 已装
+
+宝塔面板左侧 →「终端」，粘贴：
+
+```bash
+git --version || (yum install -y git || apt-get install -y git)
+```
+
+### 2. 先测一下能不能连上 GitHub
+
+```bash
+git ls-remote https://github.com/Eric8069/xiaokedz.git HEAD
+```
+
+能打印一串 commit id 再往下走。**国内服务器连 GitHub 超时 / 443 报错很常见**，遇到就别折腾代理了，直接跳到「三、打包上传」，效果完全一样。
+（仓库是 public，匿名克隆即可，不需要账号密码；本机已验证 `HEAD = 799ed5e`。）
+
+### 3. 克隆到站点根目录
+
+> ⚠️ 宝塔建站时会自动放 `index.html`、`404.html`、`.user.ini`，**目录不是空的**。
+> 直接 `git clone ... .` 会报 `fatal: destination path '.' already exists and is not an empty directory`。
+> 所以先 clone 到临时子目录，再把内容（含 `.gitignore` 等隐藏文件）搬上来，宝塔的 `.user.ini` 会保留。
+
+```bash
+SITE=/www/wwwroot/你的域名          # ← 改成宝塔「网站 → 设置 → 根目录」里的实际路径
+cd "$SITE" || exit 1
+git clone --depth=1 https://github.com/Eric8069/xiaokedz.git .src
+shopt -s dotglob
+mv .src/* .
+rmdir .src
+chown -R www:www "$SITE"
+find "$SITE" -type d -exec chmod 755 {} \;
+find "$SITE" -type f -exec chmod 644 {} \;
+ls -la "$SITE" | head -20
+```
+
+看到 `index.html`、`assets/`、`data/`、`api/` 都在 `$SITE` 这一层就对了；**不要多套一层 `xiaokedz/`**，否则页面会样式全丢。
+`--depth=1` 只拉最新版本，不带历史，几十 KB 很快。
+
+### 4. 以后更新（这就是 clone 方式的价值）
+
+**标准工作流：本地改代码 → `git push` → 服务器上跑一行更新脚本。**
+
+```bash
+cd /www/wwwroot/你的域名 && bash deploy/server-update.sh
+```
+
+脚本会自动：检查有没有本地改动 → `git pull --ff-only origin main` → 修正属主/权限 → 打印版本号。
+它只做 fast-forward，不 merge、不 reset，不会悄悄覆盖任何东西。
+
+想手动更也可以：
+
+```bash
+cd /www/wwwroot/你的域名
+git pull --ff-only origin main
+chown -R www:www .
+```
+
+⚠️ **两条约定**（不然更新会卡住）：
+
+- `api/config.php` 已被 `.gitignore` 排除，**服务器上的数据库密码不会被 pull 覆盖**，放心。
+- 但 `assets/js/sync-config.js` 这类**被跟踪的文件不要在服务器上直接改**。要开云同步，请在本地仓库把 `enabled` 改成 `true` 再 `push`，服务器只负责拉。否则脚本会检测到本地改动并停止，提示你 `git stash` 或 `git checkout --`。
+
+### 5. 不想用 git 了 / 想换成脚本部署
+
+```bash
+cd /www/wwwroot/你的域名 && rm -rf .git deploy dist
+```
+
+删掉后改用打包上传或 `deploy.sh` 都行，站点文件不受影响。
+
+> ⚠️ clone 会把 `.git/`、`deploy/` 一起放进网站根目录。务必按第六节加上 `nginx-site.conf` 的**第 7 段**，挡住这些目录，否则 `/deploy/deploy.conf.example`、`.git/config` 会被外网直接读到。
+
+---
+
+## 二、一键部署 `deploy.sh`
 
 ### 1. 准备配置
 
@@ -81,14 +161,21 @@ Git Bash 一般没有 `rsync`，脚本会自动走 `tar | ssh` 兜底，效果�
 
 ---
 
-## 二、打包上传 `pack.sh`
+## 三、打包上传 `pack.sh`
 
 ```bash
 ./deploy/pack.sh
-# ✓ 已生成 dist/xiaokedz-20261112-1800.zip
+# ✓ 已生成 dist/xiaokedz-20261112-1800.zip（或 .tgz）
 ```
 
 然后：宝塔 → 文件 → 站点根目录 → 上传 → 右键解压。
+`.tgz` 也可以在宝塔终端里解：
+
+```bash
+cd /www/wwwroot/你的域名
+tar xzf xiaokedz-20261112-1800.tgz
+chown -R www:www .
+```
 
 压缩包里**故意不含 `api/config.php`**，重复上传解压不会覆盖线上数据库配置。
 解压后在服务器上把 `api/config.example.php` 复制成 `api/config.php` 并填好数据库信息。
@@ -97,7 +184,7 @@ Git Bash 一般没有 `rsync`，脚本会自动走 `tar | ssh` 兜底，效果�
 
 ---
 
-## 三、回滚 `rollback.sh`
+## 四、回滚 `rollback.sh`
 
 ```bash
 # 看有哪些备份
@@ -111,7 +198,7 @@ Git Bash 一般没有 `rsync`，脚本会自动走 `tar | ssh` 兜底，效果�
 
 ---
 
-## 四、云同步首次部署（可选，只做一次）
+## 五、云同步首次部署（可选，只做一次）
 
 完整步骤见 `api/README.md`，这里列要点：
 
@@ -126,22 +213,26 @@ Git Bash 一般没有 `rsync`，脚本会自动走 `tar | ssh` 兜底，效果�
 
 ---
 
-## 五、部署之后要做的
+## 六、部署之后要做的
 
+- **站点根目录**：宝塔 → 网站 → 设置 → 根目录，必须指到含 `index.html` 的那一层
 - **HTTPS**：宝塔 → 网站 → SSL → Let's Encrypt，开启「强制 HTTPS」（用了云同步就必开）
-- **gzip / 缓存 / 安全规则**：把 `deploy/nginx-site.conf` 里的内容追加到站点配置的 `server { }` 内
+- **gzip / 缓存 / 安全规则**：把 `deploy/nginx-site.conf` 里的内容追加到站点配置的 `server { }` 内；**用 git clone 部署的话第 7 段必加**
 - **GitHub Pages**（可选）：仓库 Settings → Pages → `main` / `(root)`，访问 `https://用户名.github.io/xiaokedz/`。Pages 没有 PHP，会自动退回纯静态模式，不影响使用
 
-## 六、排错
+## 七、排错
 
 | 现象 | 原因 / 处理 |
 |---|---|
+| `fatal: destination path '.' already exists` | 宝塔默认文件没清空。按第一节「clone 到 `.src` 再 mv」做，别直接删 `.user.ini` |
+| `git: command not found` | `yum install -y git` |
+| `Failed to connect to github.com port 443` | 国内服务器常见。改用第三节打包上传，或给服务器配代理 |
 | `Permission denied (publickey)` | 没配 SSH 公钥。先 `ssh-copy-id root@服务器IP`，或在宝塔「终端」里生成密钥 |
 | `Connection timed out` | 安全组/防火墙没放行 22 端口，或 IP 写错 |
-| 部署后 404 | `DIR` 指错了。用 `ssh root@IP "ls /www/wwwroot"` 确认真实目录名 |
-| 页面样式丢失 | 压缩包解压多套了一层目录，`assets/` 不在根目录 |
+| 部署后 404 | `DIR` / `SITE` 指错了。用 `ssh root@IP "ls /www/wwwroot"` 确认真实目录名 |
+| 页面样式丢失 | 解压多套了一层目录，`assets/` 不在根目录 |
 | 改了内容但页面没变 | 浏览器缓存，强制刷新（Ctrl+F5）；或宝塔开了 CDN 缓存 |
 | `/api/index.php` 返回 404 | `api/` 没和 `index.html` 同级；或 nginx 的 `try_files` 把请求吃掉了 |
-| 访问 php 变成下载文件 | 站点 PHP 版本还是「纯静态」，见第四节第 2 步 |
+| 访问 php 变成下载文件 | 站点 PHP 版本还是「纯静态」，见第五节第 2 步 |
 | 页面提示「连不上服务器」 | `sync-config.js` 的 `enabled` 没改，或 `endpoint` 路径不对；F12 看 Network |
 | 每次部署后又要重填数据库密码 | 说明本地 `api/config.php` 被上传覆盖了；脚本已排除，检查是不是手动整包覆盖 |
