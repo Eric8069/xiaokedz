@@ -22,6 +22,21 @@ if [ ! -d .git ]; then
   exit 1
 fi
 
+# ---------- git 2.35.2+ 安全校验 ----------
+# 宝塔站点目录属主是 www:www，而面板终端以 root 执行 git，
+# git 会报 "detected dubious ownership" 并拒绝一切操作。
+# 这条不是你仓库坏了，也不是历史分叉，千万不要 reset --hard。
+if ! git rev-parse --git-dir >/dev/null 2>&1; then
+  git config --global --add safe.directory "$SITE" 2>/dev/null || true
+  if git rev-parse --git-dir >/dev/null 2>&1; then
+    echo "→ 已把 $SITE 加入 git safe.directory（修复 dubious ownership）"
+  else
+    echo "✗ git 仍然拒绝访问 $SITE。请手动执行后重试："
+    echo "    git config --global --add safe.directory $SITE"
+    exit 1
+  fi
+fi
+
 echo "→ 站点：$SITE"
 echo "→ 当前版本：$(git rev-parse --short HEAD) $(git log -1 --format=%s)"
 
@@ -40,8 +55,11 @@ fi
 
 echo "→ 拉取 origin/main …"
 if ! git pull --ff-only origin main; then
-  echo "✗ 拉取失败。若提示 diverged / non-fast-forward，说明本地与远端历史分叉："
-  echo "    git fetch origin && git reset --hard origin/main  # ⚠ 会丢弃服务器上所有本地改动"
+  echo "✗ 拉取失败。常见原因和对应处理："
+  echo "   1) 连不上 GitHub（443 超时）→ 改用 deploy/pack.sh 打包上传"
+  echo "   2) 历史分叉（non-fast-forward）→ git fetch origin && git reset --hard origin/main"
+  echo "      ⚠ reset --hard 会丢掉服务器上的所有本地改动，执行前先确认"
+  echo "   3) 归属校验（dubious ownership）→ git config --global --add safe.directory $SITE"
   exit 1
 fi
 

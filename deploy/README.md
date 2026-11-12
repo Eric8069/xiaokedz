@@ -225,6 +225,7 @@ chown -R www:www .
 | 现象 | 原因 / 处理 |
 |---|---|
 | `fatal: destination path '.' already exists` | 宝塔默认文件没清空。按第一节「clone 到 `.src` 再 mv」做，别直接删 `.user.ini` |
+| `detected dubious ownership in repository` | git 2.35.2+ 的安全校验：目录属主 `www:www`、终端是 `root`。执行 `git config --global --add safe.directory /www/wwwroot/你的域名` 即可，**不要 reset --hard**。`server-update.sh` 已内置自动修复 |
 | `git: command not found` | `yum install -y git` |
 | `Failed to connect to github.com port 443` | 国内服务器常见。改用第三节打包上传，或给服务器配代理 |
 | `Permission denied (publickey)` | 没配 SSH 公钥。先 `ssh-copy-id root@服务器IP`，或在宝塔「终端」里生成密钥 |
