@@ -9,3 +9,10 @@ desktop.ini
 # 依赖与测试脚手架（本项目不需要）
 node_modules/
 _test/
+
+# 本地打包产物
+dist/
+
+# 含服务器地址 / 数据库密码的本地配置，绝不提交
+deploy/deploy.conf
+api/config.php

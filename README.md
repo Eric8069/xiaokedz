@@ -1,12 +1,13 @@
 # 小课桌 · 信阳小学 4-6 年级知识点
 
 人教版小学数学、PEP 英语与语法知识点的**纯静态**互动教材站。每个知识点 = 一页图文讲解 + 一个可以动手做的实验（先预测 → 再操作 → 后解释）+ 3 道自测 + 复习卡片；另有 11 张可打印的**一页纸总结**（表格 ＋ 易错对比 ＋ 6 题带答案）。
-支持**多档案**：同一台设备上每个孩子一个档案，进度互不干扰，可导出/导入 JSON。
 
-- 无需安装、无需构建、无需数据库，双击 `index.html` 就能打开
+- **多档案**：同一台设备上每个孩子一个档案，进度互不干扰，可导出/导入 JSON
+- **可选云同步**：宝塔加一个 `api/`（PHP + MySQL），用 6 位学习码在手机 / 平板 / 电脑之间自动同步
+- 无需安装、无需构建，双击 `index.html` 就能打开；**不开云同步时零网络请求**
 - 整包上传到宝塔 LNMP 站点根目录即可上线
 - 适配手机 / 平板 / 电脑，360px 起，微信内置浏览器可用
-- 学习记录存在浏览器 localStorage，不上传服务器
+- 默认学习记录只存在浏览器 localStorage，不上传服务器
 
 ---
 
@@ -21,13 +22,20 @@ xiaokedz/
 │   └── js/
 │       ├── core.js            # DOM/SVG 助手、中文读数、控件、图形注册表
 │       ├── fig-math.js        # 15 个数学互动图
-│       ├── fig-en.js          # 11 个英语 / 语法互动图
-│       └── app.js             # 路由、页面渲染、自测、进度存储
+│       ├── fig-en.js          # 17 个英语 / 语法互动图
+│       ├── app.js             # 路由、页面渲染、自测、进度存储、云同步 UI
+│       ├── sync-config.js     # 云同步开关（默认 enabled: false）
+│       └── sync.js            # 云同步传输层（原生 XHR，关闭时不发请求）
 ├── data/
 │   ├── math.js                # 数学 15 个知识点（内容全在这里）
 │   ├── english.js             # 英语 14 个
 │   ├── grammar.js             # 语法 7 个
 │   └── summaries.js           # 11 张一页纸总结（速查表）
+├── api/                       # 可选：学习码云同步后端（PHP + MySQL）
+│   ├── index.php              # status / register / login / pull / push / clear / logout
+│   ├── install.sql            # 4 张表，phpMyAdmin 导入一次
+│   ├── config.example.php     # 配置模板，服务器上复制成 config.php
+│   └── README.md              # 宝塔部署与排错
 ├── deploy/
 │   ├── deploy.sh              # 一键 rsync 部署（含备份、权限、重载）
 │   ├── pack.sh                # 打包 zip，供宝塔上传
@@ -89,8 +97,8 @@ DRY=1 ./deploy/deploy.sh                           # 先看差异，不真传
 | 域名 | 你的域名（如 `xx.example.com`） |
 | 根目录 | 自动生成即可 |
 | FTP | 不创建 |
-| 数据库 | 不创建（本站在纯静态，不需要 MySQL） |
-| PHP 版本 | **纯静态** |
+| 数据库 | 只用纯静态就不创建；要云同步才建（见第六节） |
+| PHP 版本 | 只用纯静态选「纯静态」；**要云同步必须选 PHP 7.4+**，否则 `.php` 源码会被浏览器下载 |
 
 ### 2. 上传
 
@@ -103,10 +111,12 @@ DRY=1 ./deploy/deploy.sh                           # 先看差异，不真传
 ├── index.html
 ├── assets/
 ├── data/
+├── api/          ← 可选，不开云同步可以不传
 └── ...
 ```
 
 > 用宝塔「文件」上传 zip 后在线解压最快。解压后确认 `index.html` 就在根目录，不要多套一层目录。
+> 要开云同步，还得按第六节导入 `api/install.sql`、创建 `api/config.php`，并把 `deploy/nginx-site.conf` 第 6 段加进站点配置。
 
 ### 3. 权限
 
@@ -122,11 +132,11 @@ find /www/wwwroot/xx.example.com -type f -exec chmod 644 {} \;
 
 ### 5. 可选：开启 gzip 与缓存
 
-把 `deploy/nginx-site.conf` 里的 `location` 段追加到站点配置（宝塔 → 网站 → 设置 → 配置文件）的 `server { }` 内部，然后重载 nginx。全站压缩后约 100KB 左右，首屏很快。
+把 `deploy/nginx-site.conf` 里的 `location` 段追加到站点配置（宝塔 → 网站 → 设置 → 配置文件）的 `server { }` 内部，然后重载 nginx。全站压缩后约 100KB 左右，首屏很快。**开启云同步时，第 6 段的三条 `return 404` 是必加项**，用来挡住 `api/config.php` 和 `api/install.sql`。
 
 ### 6. 迁移
 
-整个目录打包带走，换服务器解压即可，**没有任何环境依赖**。域名变了也不用改配置（站点内全部是相对路径 + hash 路由）。
+纯静态部分整个目录打包带走，换服务器解压即可，**没有环境依赖**。域名变了也不用改配置（站点内全部是相对路径 + hash 路由）。开了云同步的话，还要一并迁移 MySQL 数据（`mysqldump`）和服务器上的 `api/config.php`；`config.php` 不在压缩包里，需要单独复制。
 
 ---
 
@@ -281,7 +291,7 @@ XK.figure('myfigure', function (ctx) {
 
 ## 六、多人使用与学习进度
 
-### 已经做好的：本机多档案
+### 已经做好的：本机多档案（默认，零配置）
 
 - 第一次打开自动建一个「我的档案」；右上角头像按钮 →「新建」可加档案（最多 8 个）
 - 每个档案独立存 `done` 记录，切换档案不会互相覆盖
@@ -296,51 +306,84 @@ XK.figure('myfigure', function (ctx) {
   "profiles": [{ "id": "p_lxxx1", "name": "小明", "at": 1730000000000 }],
   "progress": {
     "p_lxxx1": { "done": { "m4-01": { "score": 3, "total": 3, "at": 1730000000000 } } }
-  }
+  },
+  "cloud": null
 }
 ```
 
-### 换设备 / 多个孩子用不同设备
+`cloud` 为 `null` 表示没登录云端；旧数据加载时会自动补这个字段，不会丢记录。
 
-浏览器本地存储**不会自动同步**。两条路：
+### 三种绑定方式，按需要选
 
-**A. 导出 / 导入（零成本，现在就能用）**
-「我的学习」→「导出当前档案」得到一个 JSON；在另一台设备打开本站 →「导入档案」→ 自动建一个新档案并切过去。
+| 方式 | 进度绑在哪 | 换设备 | 要后端吗 | 适合 |
+|---|---|---|---|---|
+| **本机多档案**（默认） | 这台设备的浏览器 | 手动导出/导入 JSON | 不要 | 一台平板、家里一两个孩子 |
+| **导出 / 导入 JSON** | 一个文件 | 拷贝文件 | 不要 | 偶尔换设备、不想折腾服务器 |
+| **学习码云同步** | 服务端账号 | 自动，输 6 位码 | 要 `api/`（PHP + MySQL） | 手机 + 平板 + 电脑轮流用、一个班几十人 |
 
-**B. 加后端账号（一个班几十人时用这个）**
-宝塔本来就是 LNMP，加一个 `api/` 目录和两张表即可，不需要 Node、不需要换服务器：
+> **为什么不用微信 / 系统账号登录？** 浏览器沙箱拿不到 iOS / Android / 鸿蒙的系统账号；
+> 微信开放平台「网站应用」要企业营业执照 + 已备案域名 + 认证费，公众号网页授权只在微信内置浏览器有效，
+> 两者都必须有服务端保存 AppSecret。更关键的是，孩子的平板登的往往是**家长的微信 / Apple ID**，
+> 绑上去反而会把两个孩子的进度混在一起。6 位学习码零资质、零费用；
+> 身份层已预留 `provider + external_id`，以后想接微信或 Passkey 只需加一个登录入口，不用改进度表。
 
-```sql
-CREATE TABLE xk_user (
-  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  nick VARCHAR(32) NOT NULL,
-  login_code CHAR(64) NOT NULL,   -- 学号 + 口令，password_hash() 后存
-  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (id),
-  UNIQUE KEY uk_code (login_code)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+### 学习码云同步：五步开启
 
-CREATE TABLE xk_progress (
-  user_id BIGINT UNSIGNED NOT NULL,
-  point_id VARCHAR(16) NOT NULL,
-  score TINYINT UNSIGNED NOT NULL DEFAULT 0,
-  total TINYINT UNSIGNED NOT NULL DEFAULT 3,
-  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (user_id, point_id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+完整步骤与排错见 `api/README.md`，这里是最短路径：
+
+1. 宝塔 → 数据库 → 新建库 → phpMyAdmin 导入 `api/install.sql`（建 4 张表）
+2. 宝塔 → 网站 → 设置 → **PHP 版本选 7.4+**（留「纯静态」会让 `.php` 源码被浏览器下载）
+3. 服务器上创建配置：
+
+```bash
+cd /www/wwwroot/你的域名/api
+cp config.example.php config.php
+php -r "echo bin2hex(random_bytes(32)), PHP_EOL;"   # 生成 secret，复制输出
+vi config.php                                       # 填 db_name / db_user / db_pass / secret
+chown www:www config.php && chmod 600 config.php
 ```
 
-接口只需三个动作：
+4. 把 `deploy/nginx-site.conf` 第 6 段的三条 `return 404` 加进站点 `server { }`，挡住 `config.php` 和 `install.sql`
+5. 把 `assets/js/sync-config.js` 的 `enabled` 改成 `true`，重新部署；浏览器打开
+   `https://你的域名/api/index.php?act=status`，看到 `"configured":true` 即成功
 
-| 动作 | 说明 |
+然后在站点「我的学习」页 →「云同步」→ 填小名点「领取学习码」，把 6 位数字抄下来；
+在另一台设备打开同一网址，输入这串数字点「登录并同步」，进度就回来了。
+
+#### 数据表与接口
+
+| 表 | 作用 |
 |---|---|
-| `login` | 学号 + 口令 → 返回 token（不用邮箱、不用注册流程，老师发码） |
-| `pull` | 用 token 拉自己的全部 progress |
-| `push` | 交完自测上报 `{pointId, score, total}`，服务端 upsert |
+| `xk_user` | 昵称 + `provider` / `external_id`（学习码的 HMAC，或未来的 openid / credential_id） |
+| `xk_progress` | 一行一个知识点：`score` / `total` / `done_at`（毫秒时间戳，用于冲突合并） |
+| `xk_token` | 只存 token 的 SHA-256 与过期时间 |
+| `xk_attempt` | 按 IP 统计每天输错次数，防暴力猜 6 位码 |
 
-前端改动很小：把 `cur()` 换成「本地缓存 + 后台同步」，登录态存 token，离线时继续用 localStorage、联网后补传。需要的话可以按这个方案补 `api/` 和登录页。
+接口 7 个动作：`status` / `register` / `login` / `pull` / `push` / `clear` / `logout`，全部走 `api/index.php?act=`，登录态放请求头 `X-XK-Token`。
 
-> 提醒：真要给一个班用，务必先想清楚未成年人信息的最小化——只存昵称和学号，不要存真实姓名、手机号、生日。
+```sql
+-- 想看某个孩子做了哪些题
+SELECT point_id, score, total, FROM_UNIXTIME(done_at/1000) AS 完成时间
+FROM xk_progress WHERE user_id = 1 ORDER BY done_at DESC;
+```
+
+#### 使用与合并规则
+
+- 登录后会自动新建（或复用）一个**独立的「云端档案」**，本机原有档案一律不动
+- 做完自测 0.9 秒后自动上报；断网时静默失败，进度仍存本机，联网后补传
+- 每条记录带客户端时间戳，服务端只在新时间戳更大时覆盖；两台设备做完不同知识点，联网后合并成并集
+- 切回本机其它档案时云同步自动暂停，状态栏会提示切回哪个档案
+- 登录过期只更新状态栏提示重新输学习码，不会反复弹窗打断做题
+
+#### 安全与未成年人信息
+
+- **学习码等于密码**：谁拿到都能看到并改写这份进度，请家长抄在本子上，不要发群里
+- 数据库不存学习码明文、不存 token 明文；`api/config.php` 已进 `.gitignore`，部署脚本也不会覆盖或删除线上的它
+- **只存昵称和做题记录**，不存真实姓名、手机号、生日。给未成年人使用请按最小必要原则，账号由家长代为领取
+- 开了云同步务必上 HTTPS（宝塔 SSL → Let's Encrypt → 强制 HTTPS）
+
+> 不开云同步时 `assets/js/sync.js` 不会创建任何 XHR 对象，站点依旧是零网络请求的纯静态站：
+> `file://` 双击、离线、GitHub Pages 全部照常可用。
 
 ## 七、部署到 GitHub Pages（可选）
 
@@ -355,7 +398,7 @@ CREATE TABLE xk_progress (
 ## 八、改动时注意
 
 1. **不要引入外部 CDN**（字体、图表库、图标）。站点设计为完全离线可用，宝塔服务器无外网也能跑。
-2. **不要改用 ES Module 或 `fetch` 读 JSON**，否则 `file://` 打开会失败，也失去"拷走即用"的优势。
+2. **不要把内容改成 ES Module，也不要用 `fetch` 读本地 JSON**，否则 `file://` 打开会失败。云同步是唯一的网络调用（原生 XHR、默认关闭），别把它变成页面初始化的必需请求。
 3. 互动图的数值都是教学简化模型，改参数时保持"一个原因 → 一个结果"的因果关系，不要把图做成纯动画。
 4. 自测答案 `answer` 从 **0** 开始计数。
 5. 修改后至少手动点一遍：预测 → 拖滑块 → 自测，确认读数与结论一致。

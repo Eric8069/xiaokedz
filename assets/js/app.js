@@ -1,6 +1,7 @@
 /* ==========================================================================
    小课桌 · 应用（hash 路由 + 页面渲染 + 学习进度）
-   无框架、无构建、无网络请求，可直接双击 index.html 打开
+   无框架、无构建；默认零网络请求，可直接双击 index.html 打开
+   云同步是可选功能：开启方式见 assets/js/sync-config.js
    ========================================================================== */
 (function () {
   'use strict';
@@ -13,9 +14,14 @@
   var ORDER = { math: 0, english: 1, grammar: 2 };
   var DB_KEY = 'xiaokedz.v2';
   var OLD_KEY = 'xiaokedz.progress.v1';
+  var SYNC = (XK && XK.sync) ? XK.sync : null;
+  var SYNC_ON = !!(SYNC && SYNC.enabled);
   var db = loadDb();
   var destroyFigure = null;
   var spy = null;
+  var pushTimer = null;
+  var cloudStatusEl = null;
+  var syncState = { busy: false, note: '', bad: false, freshCode: null };
 
   POINTS.sort(function (a, b) {
     return (ORDER[a.subject] - ORDER[b.subject]) || (a.grade - b.grade) || a.id.localeCompare(b.id);
@@ -33,13 +39,14 @@
         var o = JSON.parse(raw);
         if (o && o.profiles && o.profiles.length && o.current) {
           if (!o.progress) o.progress = {};
+          if (!('cloud' in o)) o.cloud = null;
           return o;
         }
       }
     } catch (e) {}
     // 首次使用：建默认档案，并迁移旧版单用户记录
     var p = { id: uid(), name: '我的档案', at: Date.now() };
-    var d = { v: 2, current: p.id, profiles: [p], progress: {} };
+    var d = { v: 2, current: p.id, profiles: [p], progress: {}, cloud: null };
     d.progress[p.id] = { done: {} };
     try {
       var old = JSON.parse(localStorage.getItem(OLD_KEY) || 'null');
@@ -50,7 +57,7 @@
   }
 
   function saveDb() { try { localStorage.setItem(DB_KEY, JSON.stringify(db)); } catch (e) {} }
-  function persist() { saveDb(); }
+  function persist() { saveDb(); if (SYNC_ON && cloudBound()) schedulePush(); }
 
   function cur() {
     if (!db.progress[db.current]) db.progress[db.current] = { done: {} };
@@ -87,6 +94,279 @@
   }
   function totalCount(sub) {
     return POINTS.filter(function (p) { return !sub || p.subject === sub; }).length;
+  }
+
+  /* ---------- 云同步：状态与收发（默认关闭，关闭时下面所有函数都不会发请求） ---------- */
+  function cloud() { return db.cloud || null; }
+  function cloudBound() {
+    var c = cloud();
+    return !!(c && c.token && c.profileId === db.current && !c.expired);
+  }
+  function niceCode(c) {
+    var s = String(c || '');
+    return s.length === 6 ? s.slice(0, 3) + ' ' + s.slice(3) : s;
+  }
+  function setNote(text, bad) {
+    syncState.note = text || '';
+    syncState.bad = !!bad;
+    paintCloudCard();
+  }
+  function schedulePush() {
+    if (pushTimer) clearTimeout(pushTimer);
+    pushTimer = setTimeout(function () { pushTimer = null; pushCloud(null); }, 900);
+  }
+  // 合并策略：同一个知识点，谁的时间戳新就用谁；本地多出来的记录随后 push 补上
+  function mergeProgress(remote) {
+    var local = cur().done, n = 0;
+    if (!remote || typeof remote !== 'object') return 0;
+    Object.keys(remote).forEach(function (k) {
+      var r = remote[k];
+      if (!r || typeof r !== 'object') return;
+      var l = local[k];
+      var ra = Number(r.at) || 0;
+      var la = l ? (Number(l.at) || 0) : -1;
+      if (ra > la) {
+        local[k] = {
+          score: Math.max(0, Math.min(999, Number(r.score) || 0)),
+          total: Math.max(1, Math.min(999, Number(r.total) || 3)),
+          at: ra
+        };
+        n++;
+      }
+    });
+    return n;
+  }
+  function pushCloud(cb) {
+    if (!SYNC_ON || !cloudBound()) { if (cb) cb('off', null); return; }
+    var c = cloud();
+    syncState.busy = true; paintCloudCard();
+    SYNC.call('push', { progress: cur().done }, c.token, function (err, res) {
+      syncState.busy = false;
+      if (!err && res && res.ok) {
+        c.lastSync = Date.now();
+        c.saved = res.saved || 0;
+        saveDb();
+        setNote('已同步 ' + Object.keys(cur().done).length + ' 条记录到云端');
+      } else {
+        if (err === 'unauthorized') { c.expired = true; saveDb(); }
+        setNote(SYNC.message(err, res), err !== 'off');
+      }
+      if (cb) cb(err, res);
+    });
+  }
+  function pullCloud(cb) {
+    if (!SYNC_ON || !cloudBound()) { if (cb) cb('off', null); return; }
+    var c = cloud();
+    syncState.busy = true; paintCloudCard();
+    SYNC.call('pull', null, c.token, function (err, res) {
+      syncState.busy = false;
+      if (!err && res && res.ok) {
+        var added = mergeProgress(res.progress);
+        c.lastSync = Date.now();
+        saveDb();
+        setNote(added ? '已从云端合并 ' + added + ' 条新记录' : '云端已是最新');
+        pushCloud(null);
+      } else {
+        if (err === 'unauthorized') { c.expired = true; saveDb(); }
+        setNote(SYNC.message(err, res), err !== 'off');
+      }
+      if (cb) cb(err, res);
+    });
+  }
+  // 云端账号对应一个独立档案，用 cloudCode 标记，绝不覆盖本机已有档案
+  function bindCloud(res) {
+    var pid = null;
+    db.profiles.forEach(function (p) { if (p.cloudCode === res.code) pid = p.id; });
+    if (!pid) {
+      if (db.profiles.length >= 8) return false;
+      pid = uid();
+      db.profiles.push({
+        id: pid, name: String(res.nick || '云端档案').slice(0, 12),
+        at: Date.now(), cloudCode: res.code
+      });
+      db.progress[pid] = { done: {} };
+    }
+    db.current = pid;
+    db.cloud = {
+      token: res.token, nick: res.nick, code: res.code,
+      profileId: pid, userId: res.userId || 0,
+      lastSync: Date.now(), expired: false
+    };
+    mergeProgress(res.progress);
+    saveDb();
+    paintProfileBtn();
+    return true;
+  }
+  function cloudRegister(nick, code, cb) {
+    SYNC.call('register', { nick: nick, code: code || undefined }, null, function (err, res) {
+      if (err) return cb(err, res);
+      cb(bindCloud(res) ? null : 'local_full', res);
+    });
+  }
+  function cloudLogin(code, cb) {
+    SYNC.call('login', { code: code }, null, function (err, res) {
+      if (err) return cb(err, res);
+      cb(bindCloud(res) ? null : 'local_full', res);
+    });
+  }
+  function cloudLogout() {
+    var c = cloud();
+    if (!c) return;
+    if (SYNC) SYNC.call('logout', {}, c.token, function () {});
+    db.cloud = null;
+    syncState.freshCode = null;
+    syncState.note = '已退出登录，本机记录保留';
+    syncState.bad = false;
+    saveDb();
+    viewMe();
+  }
+  function copyText(txt, btn) {
+    function done(ok) {
+      var old = btn.textContent;
+      btn.textContent = ok ? '已复制' : '请手动抄写';
+      setTimeout(function () { btn.textContent = old; }, 1600);
+    }
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(txt).then(function () { done(true); }, function () { done(false); });
+      } else {
+        var ta = h('textarea', { style: 'position:absolute;left:-9999px' });
+        ta.value = txt;
+        document.body.appendChild(ta);
+        ta.select();
+        var ok = document.execCommand('copy');
+        ta.remove();
+        done(ok);
+      }
+    } catch (e) { done(false); }
+  }
+
+  /* ---------- 云同步：卡片 UI ---------- */
+  function paintCloudCard() {
+    // 卡片在挂载到 main 之前就会调用一次，此时元素还是 detached，
+    // 不能用 document.body.contains 判断；textContent 照样能设置，挂载后即显示
+    if (!cloudStatusEl) return;
+    var c = cloud();
+    var txt, bad = syncState.bad;
+    if (!SYNC_ON) txt = '纯静态模式 · 进度只存在这台设备';
+    else if (syncState.busy) txt = '正在同步…';
+    else if (syncState.note) txt = syncState.note;   // 错误提示要优先于「未登录」，否则看不到
+    else if (!c) txt = '未登录 · 进度只存在这台设备';
+    else if (c.expired) { txt = '登录已过期，请重新输入学习码'; bad = true; }
+    else if (!cloudBound()) {
+      var bound = profileById(c.profileId);
+      txt = '当前档案未绑定云端，切回「' + (bound ? bound.name : '云端档案') + '」可继续同步';
+    } else if (c.lastSync) txt = '已连接云端 · ' + new Date(c.lastSync).toLocaleString('zh-CN');
+    else txt = '已登录，等待同步';
+    cloudStatusEl.textContent = txt;
+    var cls = 'cloud-status';
+    if (bad) cls += ' bad';
+    else if (SYNC_ON && cloudBound()) cls += ' ok';
+    cloudStatusEl.className = cls;
+  }
+
+  function buildCloudCard() {
+    var box = h('section', { class: 'cloud-card' });
+    box.appendChild(h('h2', {}, '云同步（可选）'));
+    box.appendChild(h('p', { class: 'cloud-lead' },
+      '默认不用登录。想在手机、平板、电脑之间自动同步进度时，才需要领一个学习码。'));
+    var status = h('div', { class: 'cloud-status' });
+    cloudStatusEl = status;
+    box.appendChild(status);
+
+    if (!SYNC_ON) {
+      box.appendChild(h('p', { class: 'cloud-tip' },
+        '当前是纯静态模式，站点不会发出任何网络请求。换设备请用下面的「导出 / 导入」。' +
+        '要开启自动同步：在宝塔部署 api/ 目录，再把 assets/js/sync-config.js 里的 enabled 改成 true（见 README 第六节）。'));
+      paintCloudCard();
+      return box;
+    }
+
+    var c = cloud();
+    if (c && !c.expired) {
+      var who = h('div', { class: 'cloud-who' });
+      who.appendChild(avatar(c.nick, 34));
+      var info = h('div', { class: 'cloud-who-info' });
+      info.appendChild(h('b', {}, c.nick));
+      info.appendChild(h('span', { class: 'cloud-code' }, '学习码 ' + niceCode(c.code)));
+      who.appendChild(info);
+      box.appendChild(who);
+
+      if (syncState.freshCode === c.code) {
+        var fresh = h('div', { class: 'cloud-fresh' });
+        fresh.appendChild(h('b', {}, '新领取的学习码：' + niceCode(c.code)));
+        fresh.appendChild(h('p', {}, '请现在抄到本子上。以后在手机、平板或另一台电脑上输入这 6 位数字，就能接着上次的进度学。'));
+        var got = h('button', { class: 'btn sm', type: 'button' }, '我记好了');
+        got.addEventListener('click', function () { syncState.freshCode = null; viewMe(); });
+        fresh.appendChild(got);
+        box.appendChild(fresh);
+      }
+
+      var acts = h('div', { class: 'cloud-acts' });
+      var syncBtn = h('button', { class: 'btn sm', type: 'button' }, '立即同步');
+      syncBtn.addEventListener('click', function () { pullCloud(function () { viewMe(); }); });
+      var cpBtn = h('button', { class: 'btn sm ghost', type: 'button' }, '复制学习码');
+      cpBtn.addEventListener('click', function () { copyText(c.code, cpBtn); });
+      var outBtn = h('button', { class: 'btn sm ghost', type: 'button' }, '退出登录');
+      outBtn.addEventListener('click', function () {
+        if (confirm('退出后本机记录仍保留，但不再自动同步。确定吗？')) cloudLogout();
+      });
+      acts.appendChild(syncBtn); acts.appendChild(cpBtn); acts.appendChild(outBtn);
+      box.appendChild(acts);
+      box.appendChild(h('p', { class: 'cloud-tip' },
+        '学习码等于密码，谁拿到都能看到并改写这份进度，不要发到群里。只存昵称和学习记录，不存真实姓名、手机号。'));
+      paintCloudCard();
+      return box;
+    }
+
+    var forms = h('div', { class: 'cloud-forms' });
+    var f1 = h('form', { class: 'cloud-form' });
+    f1.appendChild(h('b', {}, '第一次用：领一个学习码'));
+    var nickIn = h('input', { type: 'text', maxlength: '16', placeholder: '孩子的小名', 'aria-label': '昵称', autocomplete: 'off' });
+    var regBtn = h('button', { class: 'btn sm', type: 'submit' }, '领取学习码');
+    f1.appendChild(nickIn);
+    f1.appendChild(regBtn);
+    f1.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var v = nickIn.value.trim();
+      if (!v) { nickIn.focus(); return; }
+      regBtn.disabled = true;
+      cloudRegister(v, '', function (err, res) {
+        regBtn.disabled = false;
+        if (err) { setNote(SYNC.message(err, res), true); return; }
+        syncState.freshCode = res.code;
+        syncState.note = '';
+        syncState.bad = false;
+        viewMe();
+      });
+    });
+    forms.appendChild(f1);
+
+    var f2 = h('form', { class: 'cloud-form' });
+    f2.appendChild(h('b', {}, '已有学习码：在这台设备登录'));
+    var codeIn = h('input', { type: 'text', inputmode: 'numeric', maxlength: '8', placeholder: '6 位数字', 'aria-label': '学习码', autocomplete: 'off' });
+    var loginBtn = h('button', { class: 'btn sm', type: 'submit' }, '登录并同步');
+    f2.appendChild(codeIn);
+    f2.appendChild(loginBtn);
+    f2.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var v = codeIn.value.replace(/\D/g, '');
+      if (v.length !== 6) { setNote('学习码是 6 位数字，再检查一下', true); codeIn.focus(); return; }
+      loginBtn.disabled = true;
+      cloudLogin(v, function (err, res) {
+        loginBtn.disabled = false;
+        if (err) { setNote(SYNC.message(err, res), true); return; }
+        syncState.note = '';
+        syncState.bad = false;
+        viewMe();
+      });
+    });
+    forms.appendChild(f2);
+    box.appendChild(forms);
+    box.appendChild(h('p', { class: 'cloud-tip' },
+      '登录后会自动新建一个「云端档案」，本机原有档案不受影响。离线时照常学习，联网后会自动补传。'));
+    paintCloudCard();
+    return box;
   }
 
   /* ---------- 小工具 ---------- */
@@ -785,6 +1065,7 @@
     if (!confirm('删除档案「' + p.name + '」以及它的全部学习记录？删除后无法恢复。')) return;
     db.profiles = db.profiles.filter(function (x) { return x.id !== id; });
     delete db.progress[id];
+    if (db.cloud && db.cloud.profileId === id) db.cloud = null;
     if (db.current === id) db.current = db.profiles[0].id;
     saveDb();
     paintProfileBtn();
@@ -892,6 +1173,9 @@
     acts.appendChild(ex);
     acts.appendChild(im);
     acts.appendChild(rn);
+    var goCloud = h('a', { class: 'btn sm ghost', href: '#/me' }, '云同步设置');
+    goCloud.addEventListener('click', closeProfileModal);
+    acts.appendChild(goCloud);
     card.appendChild(acts);
 
     pfModal.appendChild(card);
@@ -944,10 +1228,10 @@
     main.innerHTML = '';
     var me = curProfile();
     var head = h('div', { class: 'point-head' });
-    head.appendChild(h('div', { class: 'kicker' }, '本机保存 · 多档案'));
+    head.appendChild(h('div', { class: 'kicker' }, '本机保存 · 多档案 · 可选云同步'));
     head.appendChild(h('h1', {}, '学习档案'));
     head.appendChild(h('p', { style: 'color:var(--muted);max-width:64ch' },
-      '同一台设备上，每个孩子一个档案，进度互不干扰。进度存在这台设备的浏览器里；换手机或换电脑，用「导出 / 导入」把记录带过去。'));
+      '同一台设备上，每个孩子一个档案，进度互不干扰。默认只存在本机浏览器里；换设备可以用「导出 / 导入」，或开启下面的云同步自动同步。'));
     main.appendChild(head);
 
     // 档案卡
@@ -979,6 +1263,8 @@
     });
     grid.appendChild(addCard);
     main.appendChild(grid);
+
+    main.appendChild(buildCloudCard());
 
     var tools = h('div', { class: 'pf-tools' });
     var exBtn = h('button', { class: 'btn sm', type: 'button' }, '导出当前档案');
@@ -1064,8 +1350,10 @@
       var clr = h('button', { class: 'btn sm', type: 'button', style: 'margin-top:20px' }, '清空「' + me.name + '」的记录');
       clr.addEventListener('click', function () {
         if (confirm('只清空当前档案「' + me.name + '」的记录，其他档案不受影响。确定吗？')) {
+          var cloudOn = SYNC_ON && cloudBound();
           cur().done = {};
-          saveDb();
+          persist();
+          if (cloudOn) SYNC.call('clear', {}, cloud().token, function () {});
           viewMe();
         }
       });
@@ -1110,7 +1398,7 @@
 
     doc.appendChild(h('h2', {}, '多人使用：每个孩子一个档案'));
     doc.appendChild(h('p', {}, '同一台设备上可以建多个档案，各自独立记录进度，互不覆盖。适合家里两个孩子、或者一台平板轮流用。档案之间可以随时切换，右上角头像按钮或「我的学习」页都能进。'));
-    doc.appendChild(h('p', {}, '要注意的是：档案存在浏览器本地，换设备不会自动同步。把自己的档案「导出」成 JSON，在另一台设备上「导入」，就能带走记录。如果需要一个班几十人跨设备同步，需要加后端账号系统（见 README「多人进度方案」）。'));
+    doc.appendChild(h('p', { html: '进度默认存在浏览器本地，换设备不会自动同步。两条办法：<b>导出 / 导入 JSON</b>（零配置，随时可用）；或在宝塔部署 <code>api/</code> 后开启 <b>云同步</b>，家长领一个 6 位学习码，孩子在任何设备上输入就能接着学。云同步默认关闭，不开时站点<b>不会发出任何网络请求</b>，仍是完整可用的纯静态站。详见 README 第六节。' }));
 
     doc.appendChild(h('h2', {}, '技术说明'));
     doc.appendChild(h('p', {}, '纯静态站点：HTML + CSS + 原生 JavaScript，没有框架、没有构建步骤、不请求任何外部资源。整个目录拷到宝塔的网站根目录就能用，也能直接双击 index.html 离线打开。'));
@@ -1118,10 +1406,10 @@
       h('thead', {}, h('tr', {}, h('th', {}, '项目'), h('th', {}, '说明'))),
       h('tbody', {},
         h('tr', {}, h('td', {}, '页面数量'), h('td', {}, '1 个 HTML 入口 + hash 路由')),
-        h('tr', {}, h('td', {}, '依赖'), h('td', {}, '无（无 CDN、无字体文件、无后端）')),
-        h('tr', {}, h('td', {}, '学习记录'), h('td', {}, '浏览器 localStorage，按档案分开存，可导出/导入 JSON')),
+        h('tr', {}, h('td', {}, '依赖'), h('td', {}, '无（无 CDN、无字体文件；云同步为可选的 PHP + MySQL）')),
+        h('tr', {}, h('td', {}, '学习记录'), h('td', {}, '浏览器 localStorage，按档案分开存；可导出/导入 JSON，可选学习码云同步')),
         h('tr', {}, h('td', {}, '兼容'), h('td', {}, 'Chrome / Edge / Safari / 微信内置浏览器，360px 起')),
-        h('tr', {}, h('td', {}, '部署'), h('td', {}, '宝塔新建静态站点 → 上传目录 → 完成'))
+        h('tr', {}, h('td', {}, '部署'), h('td', {}, '宝塔新建站点 → 上传目录 → 完成；要云同步再导入 install.sql'))
       )
     ));
 
@@ -1371,4 +1659,6 @@
   window.addEventListener('hashchange', router);
   if (!location.hash) location.replace('#/');
   router();
+  // 已登录且开启云同步：启动时静默合并一次；断网时静默失败，离线照常用
+  if (SYNC_ON && cloudBound()) pullCloud(function () { router(); });
 })();

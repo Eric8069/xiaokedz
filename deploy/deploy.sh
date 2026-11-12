@@ -68,7 +68,9 @@ else
 fi
 
 # ---------- 同步 ----------
-EXCLUDES=(--exclude=.git --exclude=node_modules --exclude=_test --exclude=deploy --exclude=.DS_Store --exclude=Thumbs.db)
+# api/config.php 只在服务器上维护：既不上传，也不被 rsync --delete 删掉
+EXCLUDES=(--exclude=.git --exclude=node_modules --exclude=_test --exclude=deploy \
+          --exclude=dist --exclude=api/config.php --exclude=.DS_Store --exclude=Thumbs.db)
 
 if [ "$DRY" = "1" ]; then
   echo "→ DRY 模式，只列出差异："
@@ -86,13 +88,14 @@ if command -v rsync >/dev/null 2>&1; then
   rsync -az --delete "${EXCLUDES[@]}" ./ "$USER@$HOST:$DIR/"
 else
   # 没有 rsync 时的兜底：打包后通过 ssh 解压（会先清空目标目录里的旧文件）
-  tar czf - "${EXCLUDES[@]}" index.html assets data start.bat README.md LICENSE 2>/dev/null \
+  tar czf - "${EXCLUDES[@]}" index.html assets data api start.bat README.md LICENSE 2>/dev/null \
     | $SSH "rm -rf '$DIR/assets' '$DIR/data' '$DIR/index.html' '$DIR/start.bat' && tar xzf - -C '$DIR'"
 fi
 
 # ---------- 权限 ----------
 echo "→ 修正权限…"
-$SSH "chown -R $OWNER '$DIR' 2>/dev/null || true; find '$DIR' -type d -exec chmod 755 {} \; ; find '$DIR' -type f -exec chmod 644 {} \;"
+$SSH "chown -R $OWNER '$DIR' 2>/dev/null || true; find '$DIR' -type d -exec chmod 755 {} \; ; find '$DIR' -type f -exec chmod 644 {} \;; \
+      if [ -f '$DIR/api/config.php' ]; then chown $OWNER '$DIR/api/config.php' 2>/dev/null || true; chmod 600 '$DIR/api/config.php'; fi"
 
 # ---------- 重载 nginx ----------
 if [ "$RELOAD_NGINX" = "1" ]; then

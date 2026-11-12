@@ -852,3 +852,60 @@ input[type="range"]:disabled { opacity: .45; cursor: not-allowed; }
   *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
   html { scroll-behavior: auto; }
 }
+
+/* ---------- 云同步卡片 ---------- */
+.cloud-card {
+  margin-top: 26px; padding: 20px 22px;
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: var(--r-md); box-shadow: var(--shadow-1);
+}
+.cloud-card > * { min-width: 0; }
+.cloud-card h2 { font-size: 17px; margin: 0 0 6px; }
+.cloud-lead { margin: 0 0 14px; font-size: 13px; color: var(--muted); }
+.cloud-tip { margin: 12px 0 0; font-size: 12.5px; line-height: 1.75; color: var(--muted); }
+.cloud-status {
+  display: inline-flex; align-items: center; gap: 8px; max-width: 100%;
+  padding: 7px 12px; margin-bottom: 4px; border-radius: 999px;
+  font-size: 12.5px; background: var(--paper-2);
+  color: var(--ink-2); border: 1px solid var(--line);
+}
+.cloud-status::before {
+  content: ''; width: 7px; height: 7px; flex: none;
+  border-radius: 50%; background: var(--faint);
+}
+.cloud-status.ok { background: var(--good-soft); border-color: #bfe3c9; color: var(--good); }
+.cloud-status.ok::before { background: var(--good); }
+.cloud-status.bad { background: var(--bad-soft); border-color: #f5cbb8; color: var(--bad); }
+.cloud-status.bad::before { background: var(--bad); }
+.cloud-who { display: flex; align-items: center; gap: 12px; margin: 16px 0 4px; }
+.cloud-who-info { display: flex; flex-direction: column; min-width: 0; }
+.cloud-who-info b { font-size: 15px; }
+.cloud-code { font-family: var(--mono); font-size: 15px; letter-spacing: .12em; color: var(--ink-2); }
+.cloud-fresh {
+  margin: 16px 0 4px; padding: 14px 16px;
+  background: #fff8e6; border: 1px solid #f2d68a; border-radius: var(--r-sm);
+}
+.cloud-fresh b { display: block; font-family: var(--mono); font-size: 20px; letter-spacing: .16em; color: #8a5a00; }
+.cloud-fresh p { margin: 6px 0 10px; font-size: 13px; color: var(--ink-2); }
+.cloud-acts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.cloud-forms { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 16px; }
+.cloud-form {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 9px;
+  padding: 15px; min-width: 0;
+  background: var(--paper-2); border: 1px solid var(--line); border-radius: var(--r-sm);
+}
+.cloud-form b { font-size: 13.5px; }
+.cloud-form input {
+  width: 100%; min-width: 0; padding: 9px 11px;
+  font: inherit; font-size: 14px; color: var(--ink);
+  background: var(--card); border: 1px solid var(--line-2); border-radius: var(--r-sm);
+}
+.cloud-form input:focus { outline: 2px solid var(--math); outline-offset: 1px; }
+.cloud-form .btn { align-self: flex-start; }
+.cloud-form button:disabled { opacity: .55; cursor: default; }
+
+@media (max-width: 620px) {
+  .cloud-forms { grid-template-columns: 1fr; }
+  .cloud-card { padding: 16px 14px; }
+}
+@media print { .cloud-card { display: none !important; } }
