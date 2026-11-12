@@ -74,7 +74,9 @@ window.XK_SYNC_CONFIG = {
 
 改完重新上传这个文件（或重新跑一次 `./deploy/deploy.sh`）。
 
-### 5. 自检
+### 5. 自检（分三层，别混在一起）
+
+#### 第一层：PHP 能不能解析
 
 浏览器打开：
 
@@ -88,9 +90,54 @@ https://你的域名/api/index.php?act=status
 {"ok":true,"version":1,"provider":"code","configured":true}
 ```
 
-`configured` 为 `false` 说明 `secret` 还没改；返回 404 说明 `api/` 放错目录；下载了 php 源码说明第 2 步没做。
-然后打开站点的「我的学习」页，云同步卡片应显示「未登录」，填个小名点「领取学习码」，拿到 6 位数字；
-换一台设备打开同一个网址，输入这 6 位数字点「登录并同步」，进度就会出现在新设备上。
+> ⚠️ **`status` 只检查 `config.php` 存在、且 `secret` 已改成 ≥16 位随机串**（源码里是 `configured = secret_ok()`）。
+> 它**不连数据库**、**不读前端 JS**、**也不受那三条 `return 404` 影响**——那三条只挡
+> `config.php` / `config.example.php` / `install.sql`，不打 `index.php`。
+> 所以 `sync-config.js` 的 `enabled` 是 true 还是 false，`?act=status` 的返回都一样。
+> **`configured:true` 只代表配置读到了，不代表数据库通了、也不代表前端开关生效**，还要做第二、三层。
+
+三条 nginx 规则**可以**放进宝塔「网站 → 设置 → 伪静态」框（该框内容会被 include 进 `server { }`），
+`^~` 前缀匹配优先于 PHP 的正则 location，能生效。但有三个坑：
+
+- **只放那三条 `location ^~ ...` 行**，不要把整个 `nginx-site.conf` 粘进去。里面第 5 段的
+  `location / { try_files ...; }` 会和宝塔自带配置重复，报 `duplicate location "/"`，重载失败后所有新规则都不生效；
+- **千万别简写成 `location ^~ /api/ { return 404; }`**，那会把整个 API 目录挡掉，`?act=status` 直接 404；
+- 保存后执行 `nginx -t` 确认配置通过，再重载。
+
+#### 第二层：服务器上一键定位
+
+宝塔终端执行（`SITE` 换成实际路径）：
+
+```bash
+SITE=/www/wwwroot/你的域名
+cd "$SITE" || exit 1
+echo "--- 文件层级 ---"; ls -la api/ | head -20
+echo "--- PHP 直跑（绕过 nginx）---"
+php -r '$_GET["act"]="status"; include "api/index.php";' 2>&1 | head -5
+echo "--- 走 nginx ---"
+curl -s -i "http://127.0.0.1/api/index.php?act=status" -H "Host: 你的域名" | head -20
+echo "--- 配置语法 ---"; nginx -t 2>&1 | tail -3
+```
+
+`php -r` 能出 JSON、浏览器出不来 → nginx / PHP-FPM 配置问题；两者都出不来 → `api/config.php` 或 PHP 版本问题。
+返回对照：
+
+| 看到什么 | 原因 |
+|---|---|
+| `{"ok":true,...,"configured":true}` | 这一层通了，去做第三层 |
+| `configured:false` | `secret` 还是模板默认值，或不足 16 位 |
+| `config_missing` | 没创建 `api/config.php` |
+| 返回 404 | `api/` 层级不对；或伪静态里误挡了 `/api/`；或 `try_files` 把请求兜底了 |
+| 下载了 php 源码 / 显示源码 | 站点 PHP 版本还是「纯静态」，见第 2 步 |
+| 返回网站首页 HTML | `try_files ... /index.html` 兜底了，检查 PHP 是否启用 |
+| 500 `db_error` | 这一层不该出现（status 不连库）；若出现说明访问的不是 `act=status` |
+
+#### 第三层：数据库 + 前端
+
+打开站点「我的学习」页，云同步卡片应显示「未登录」，填个小名点「领取学习码」，拿到 6 位数字
+（**这一步才真正连数据库**，会暴露 `db_error`）。F12 → Network 应能看到 `api/index.php?act=register` 请求；
+一个都没有，说明前端 `enabled` 还是 `false` 或浏览器缓存没刷（Ctrl+F5）。
+最后换一台设备打开同一网址，输入这 6 位数字点「登录并同步」，进度出现在新设备上即全通。
 
 ---
 
@@ -133,8 +180,10 @@ https://你的域名/api/index.php?act=status
 
 | 现象 | 原因 / 处理 |
 |---|---|
-| `status` 返回 404 | `api/` 没和 `index.html` 放同一层；或 nginx 配了 `try_files` 把请求吃掉了 |
+| `status` 返回 404 | `api/` 没和 `index.html` 放同一层；伪静态里误写成 `location ^~ /api/ { return 404; }` 把整个目录挡了；或 `try_files` 把请求吃掉了 |
+| 规则加了伪静态但还是不生效 | 整段 `nginx-site.conf` 粘进伪静态导致 `duplicate location "/"`，`nginx -t` 会报错、面板重载会失败。只放三条 `location ^~ ...` 行 |
 | 访问 php 变成下载文件 | 站点 PHP 版本还是「纯静态」，见第 2 步 |
+| `configured:true` 但页面还是不能用 | `status` 不连数据库也不读前端 JS。去「我的学习」点「领取学习码」验数据库，F12 看 Network 验 `enabled` 开关 |
 | `configured: false` | `config.php` 的 `secret` 没换，或长度不足 16 位 |
 | `db_error` | 数据库名 / 用户 / 密码不对；或没导入 `install.sql`；或 PHP 没装 `pdo_mysql` |
 | 页面一直提示「连不上服务器」 | `sync-config.js` 的 `enabled` 没改成 `true`；或 `endpoint` 路径不对；F12 看 Network |

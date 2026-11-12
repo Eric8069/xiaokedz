@@ -205,9 +205,9 @@ chown -R www:www .
 1. 宝塔 → 数据库 → 新建库 → phpMyAdmin 导入 `api/install.sql`（4 张表）
 2. 宝塔 → 网站 → 设置 → **PHP 版本选 7.4+，不要留「纯静态」**（否则 `.php` 源码会被浏览器下载）
 3. 服务器上：`cd api && cp config.example.php config.php`，填数据库信息和一段随机 `secret`，`chmod 600`
-4. 把 `deploy/nginx-site.conf` 的第 6 段（三条 `return 404`）加进站点 `server { }`，挡住 `config.php` / `install.sql`
-5. 本地把 `assets/js/sync-config.js` 的 `enabled` 改成 `true`，重新部署
-6. 浏览器打开 `https://你的域名/api/index.php?act=status`，看到 `"configured":true` 即成功
+4. 把 `deploy/nginx-site.conf` 的第 6 段（三条 `return 404`）加进站点 `server { }`，挡住 `config.php` / `install.sql`。也可以放进宝塔「伪静态」框（会被 include 进 `server { }`），但**只放那三条行**，别整段粘、更别写成 `location ^~ /api/ { return 404; }` 把整个 API 挡掉；存完 `nginx -t` 验一下
+5. 本地把 `assets/js/sync-config.js` 的 `enabled` 改成 `true`，push 后在服务器跑 `bash deploy/server-update.sh`（别在服务器上直接改，会被更新脚本拦下）
+6. 浏览器打开 `https://你的域名/api/index.php?act=status`，看到 `"configured":true` **只表示配置文件读到了**：这个接口不连数据库、也不读前端 JS。还要在「我的学习」点一次「领取学习码」验数据库，F12 看 Network 验前端开关。完整分层自检见 `api/README.md` 第五节
 
 前端开关不开时，站点**不会发出任何网络请求**，双击 `index.html`、离线、GitHub Pages 都照常可用。
 
