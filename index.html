@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>小课桌 · 信阳小学 4-6 年级知识点</title>
+<meta name="description" content="人教版小学数学、英语与语法知识点，每个知识点配一个可以动手做的实验：先预测、再操作、后解释。适合 4-6 年级自主预习与复习。">
+<meta name="theme-color" content="#fbf8f3">
+<meta name="format-detection" content="telephone=no">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+<a class="skip" href="#main">跳到主要内容</a>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="#/">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M3 7.5 12 4l9 3.5-9 3.5-9-3.5Z" fill="#fff"/><path d="M6.5 10.6v5.2c0 1.5 2.5 2.7 5.5 2.7s5.5-1.2 5.5-2.7v-5.2" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </span>
+      <span class="brand-txt">
+        <b>小课桌</b>
+        <span>信阳小学 4-6 年级</span>
+      </span>
+    </a>
+    <nav class="nav" aria-label="主导航">
+      <a href="#/math" data-page="math">数学</a>
+      <a href="#/english" data-page="english">英语</a>
+      <a href="#/grammar" data-page="grammar">语法</a>
+      <a href="#/cheat" data-page="cheat">总结</a>
+      <a href="#/me" data-page="me">我的学习</a>
+      <a href="#/about" data-page="about">关于</a>
+    </nav>
+    <button class="profile-btn" id="profileBtn" type="button" aria-haspopup="dialog" aria-expanded="false" aria-label="切换或新建学习档案">
+      <span class="pf-avatar-slot" id="pfAvatar"></span>
+      <span class="pf-name" id="pfName">我的档案</span>
+      <svg class="pf-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg>
+    </button>
+    <button class="burger" id="burger" aria-label="打开菜单" aria-expanded="false" aria-controls="sheet">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+  </div>
+</header>
+
+<div class="drawer" id="sheet" hidden>
+  <div class="drawer-panel" role="dialog" aria-label="站点导航">
+    <a href="#/"><i style="background:#1e232b"></i>首页</a>
+    <a href="#/math"><i style="background:#2563eb"></i>数学</a>
+    <a href="#/english"><i style="background:#e0632f"></i>英语</a>
+    <a href="#/grammar"><i style="background:#7c3aed"></i>语法</a>
+    <a href="#/cheat"><i style="background:#f2b705"></i>一页纸总结</a>
+    <a href="#/me"><i style="background:#15803d"></i>我的学习</a>
+    <a href="#/about"><i style="background:#9aa1ab"></i>关于本站</a>
+  </div>
+</div>
+
+<main id="main" class="wrap"></main>
+
+<footer class="foot">
+  <div class="foot-in">
+    <div class="col">
+      <b>小课桌</b>
+      人教版小学数学、PEP 英语与语法，<br>4-6 年级自主预习与复习。
+    </div>
+    <div class="col">
+      <b>学习入口</b>
+      <a href="#/math">数学知识点</a><br>
+      <a href="#/english">英语句型</a><br>
+      <a href="#/grammar">语法规则</a>
+    </div>
+    <div class="col">
+      <b>使用说明</b>
+      每个知识点先做预测，<br>再动手操作，最后自己解释。
+    </div>
+    <div class="foot-note">
+      教学示意图为简化模型，参数为便于理解而取整，不代表精确测量结果；不作为工程、医学或考试命题依据。
+      内容依据人教版（PEP）教材单元顺序整理，不同版本进度略有差异，请以学校课本为准。
+      互动图设计方法参考 <b>Teachable Figures</b> by ywEdAi（代码 MIT，文字内容 CC BY 4.0）。
+    </div>
+  </div>
+</footer>
+
+<script src="data/math.js"></script>
+<script src="data/english.js"></script>
+<script src="data/grammar.js"></script>
+<script src="data/summaries.js"></script>
+<script src="assets/js/core.js"></script>
+<script src="assets/js/fig-math.js"></script>
+<script src="assets/js/fig-en.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>
