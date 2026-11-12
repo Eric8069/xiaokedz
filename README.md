@@ -1,6 +1,6 @@
 # 小课桌 · 信阳小学 4-6 年级知识点
 
-人教版小学数学、PEP 英语与语法知识点的**纯静态**互动教材站。每个知识点 = 一页图文讲解 + 一个可以动手做的实验（先预测 → 再操作 → 后解释）+ 3 道自测 + 复习卡片；另有 11 张可打印的**一页纸总结**（表格 ＋ 易错对比 ＋ 6 题带答案）。
+人教版小学数学、PEP 英语与统编语文知识点的**纯静态**互动教材站。每个知识点 = 一页图文讲解 + 一句「记住这一句」+ 一个可以动手做的实验（先预测 → 再操作 → 后解释）+ 3 道自测 + 复习卡片；另有 13 张可打印的**一页纸总结**（表格 ＋ 易错对比 ＋ 6 题带答案）。
 
 - **多档案**：同一台设备上每个孩子一个档案，进度互不干扰，可导出/导入 JSON
 - **可选云同步**：宝塔加一个 `api/`（PHP + MySQL），用 6 位学习码在手机 / 平板 / 电脑之间自动同步
@@ -22,15 +22,17 @@ xiaokedz/
 │   └── js/
 │       ├── core.js            # DOM/SVG 助手、中文读数、控件、图形注册表
 │       ├── fig-math.js        # 15 个数学互动图
-│       ├── fig-en.js          # 17 个英语 / 语法互动图
+│       ├── fig-en.js          # 21 个英语 / 语法互动图
+│       ├── fig-cn.js          # 7 个语文互动图
 │       ├── app.js             # 路由、页面渲染、自测、进度存储、云同步 UI
 │       ├── sync-config.js     # 云同步开关（默认 enabled: false）
 │       └── sync.js            # 云同步传输层（原生 XHR，关闭时不发请求）
 ├── data/
 │   ├── math.js                # 数学 15 个知识点（内容全在这里）
-│   ├── english.js             # 英语 14 个
-│   ├── grammar.js             # 语法 7 个
-│   └── summaries.js           # 11 张一页纸总结（速查表）
+│   ├── english.js             # 英语句型 14 个
+│   ├── english-grammar.js     # 英语语法 7 个（并入英语学科）
+│   ├── chinese.js             # 语文 7 个
+│   └── summaries.js           # 13 张一页纸总结（速查表）
 ├── api/                       # 可选：学习码云同步后端（PHP + MySQL）
 │   ├── index.php              # status / register / login / pull / push / clear / logout
 │   ├── install.sql            # 4 张表，phpMyAdmin 导入一次
@@ -46,14 +48,14 @@ xiaokedz/
 └── README.md
 ```
 
-一共 36 个知识点、32 个互动图类型、11 张一页纸总结。所有内容都是 `data/*.js` 里的普通对象，改文字不用碰代码。
+一共 43 个知识点（数学 15、英语 21、语文 7）、39 个互动图类型、13 张一页纸总结。所有内容都是 `data/*.js` 里的普通对象，改文字不用碰代码。
 
 页面路由（hash，不需要服务器 rewrite）：
 
 | 地址 | 内容 |
 |---|---|
 | `#/` | 首页 |
-| `#/math`、`#/english`、`#/grammar` | 分科知识点列表（可加年级：`#/math/4`） |
+| `#/math`、`#/english`、`#/chinese` | 分科知识点列表（可加年级：`#/math/4`） |
 | `#/p/<id>` | 知识点详情 |
 | `#/cheat` | 一页纸总结列表 |
 | `#/cheat/<id>` | 某张总结（可打印） |
@@ -144,12 +146,12 @@ find /www/wwwroot/xx.example.com -type f -exec chmod 644 {} \;
 
 ### 加一个知识点
 
-在 `data/math.js`（或 english / grammar）数组里追加一个对象：
+在 `data/math.js`（或 english / chinese）数组里追加一个对象：
 
 ```js
 {
   id: 'm6-16',                 // 唯一，建议 科目+年级+序号
-  subject: 'math',             // math | english | grammar
+  subject: 'math',             // math | english | chinese
   grade: 6, term: '上',        // 4 / 5 / 6；term 可省略
   unit: '第七单元',
   title: '扇形统计图',
@@ -187,7 +189,7 @@ find /www/wwwroot/xx.example.com -type f -exec chmod 644 {} \;
 
 ### 可复用的图形类型（`figure.type`）
 
-| 数学（15） | | 英语 / 语法（17） | |
+| 数学（15） | | 英语（21） | |
 |---|---|---|---|
 | `placevalue` | 数位分级读数 | `clock` | 钟面时间 |
 | `angle` | 量角器 | `preposition` | 方位介词 |
@@ -206,6 +208,16 @@ find /www/wwwroot/xx.example.com -type f -exec chmod 644 {} \;
 | `percent` | 折扣 | `directions` | 问路走迷宫 |
 | | | `job` | 职业问答 |
 | | | `modal` | 情态动词语气 |
+
+| 语文（7） | |
+|---|---|
+| `rhetoric` | 修辞诊断（比喻 / 拟人） |
+| `punct` | 换标点看语气变化 |
+| `sickfix` | 病句门诊（选病因） |
+| `connect` | 关联词连句 |
+| `explain` | 说明方法识别 |
+| `poem` | 古诗意象解码 |
+| `summary` | 段落压缩（概括） |
 
 带初始状态的图形，可以加 `state`，例如：
 
@@ -238,14 +250,16 @@ XK.figure('myfigure', function (ctx) {
 
 面向"考前 10 分钟"和"打印带到学校"：口诀开头、表格中间、易错对比压轴、最后 6 题自查。
 
-现成的 11 张：
+现成的 13 张：
 
 | id | 标题 | 科目 |
 |---|---|---|
 | `prep` | 小学英语介词全表 | 英语 |
 | `tense` | 四种时态一张表 | 英语 |
 | `sentence` | 句型转换一张表 | 英语 |
-| `noun` | 名词、代词与冠词 | 语法 |
+| `noun` | 名词、代词与冠词 | 英语 |
+| `cn-rhetoric` | 修辞·病句·标点 | 语文 |
+| `cn-read` | 概括·说明方法·古诗意象 | 语文 |
 | `math-formula` | 数学公式与单位速查 | 数学 |
 | `math-trap` | 数学 15 个高频易错点 | 数学 |
 | `wh` | 特殊疑问词速查 | 英语 |
@@ -260,7 +274,7 @@ XK.figure('myfigure', function (ctx) {
 
 ```js
 {
-  id: 'wh', subject: 'grammar',
+  id: 'wh', subject: 'english',
   title: '特殊疑问词一张表',
   sub: '问什么用什么，一句话定疑问词',
   tags: ['疑问词', 'what', 'where'],
@@ -409,7 +423,8 @@ FROM xk_progress WHERE user_id = 1 ORDER BY done_at DESC;
 
 - 数学：人教版，覆盖四年级上册至六年级上册的高频易错点，按单元顺序。
 - 英语：人教版 PEP（三年级起点），四至六年级核心句型。
-- 语法：按 PEP 教材出现顺序归纳，是跨单元专题，不与某一课一一对应。
+- 英语语法：按 PEP 教材出现顺序归纳，是跨单元专题，不与某一课一一对应，归在英语学科下。
+- 语文：按统编版 4-6 年级读写要求整理，覆盖修辞、标点、病句、关联词、说明方法、古诗与概括。
 - 河南信阳各区县、各校进度可能不同，**以学校课本和老师要求为准**。
 
 互动图中的数值为便于理解而取整，属教学简化模型，不是精确测量，也不构成工程或临床仿真。题目为巩固概念设计，不替代学校作业与考试训练。学习效果未经教学实验验证。

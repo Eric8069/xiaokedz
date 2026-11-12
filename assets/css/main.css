@@ -19,8 +19,8 @@
   --math-soft: #e9f0ff;
   --en: #e0632f;
   --en-soft: #fdeee6;
-  --gram: #7c3aed;
-  --gram-soft: #f2ebff;
+  --cn: #0f766e;
+  --cn-soft: #e3f3f0;
 
   --good: #15803d;
   --good-soft: #e8f6ec;
@@ -121,7 +121,7 @@ code { font-family: var(--mono); font-size: .92em; background: var(--paper-2); p
 .nav a[aria-current="page"] { color: #fff; }
 .nav a[aria-current="page"][data-page="math"] { background: var(--math); }
 .nav a[aria-current="page"][data-page="english"] { background: var(--en); }
-.nav a[aria-current="page"][data-page="grammar"] { background: var(--gram); }
+.nav a[aria-current="page"][data-page="chinese"] { background: var(--cn); }
 .nav a[aria-current="page"][data-page="cheat"] { background: var(--gold); color: #4a3600; }
 .nav a[aria-current="page"][data-page="me"],
 .nav a[aria-current="page"][data-page="about"] { background: var(--ink); }
@@ -199,7 +199,7 @@ code { font-family: var(--mono); font-size: .92em; background: var(--paper-2); p
 }
 .sc-E { --tone: var(--en); --tint: var(--en-soft); }
 .sc-M { --tone: var(--math); --tint: var(--math-soft); }
-.sc-G { --tone: var(--gram); --tint: var(--gram-soft); }
+.sc-C { --tone: var(--cn); --tint: var(--cn-soft); }
 .sc-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
 .sc-dot { width: 12px; height: 12px; border-radius: 4px; background: var(--tone); }
 .sc-top b { font-size: 17px; }
@@ -241,7 +241,7 @@ code { font-family: var(--mono); font-size: .92em; background: var(--paper-2); p
 .pb-bar i { display: block; height: 100%; }
 .pb-bar i.m { background: var(--math); }
 .pb-bar i.e { background: var(--en); }
-.pb-bar i.g { background: var(--gram); }
+.pb-bar i.c { background: var(--cn); }
 
 /* 年级筛选 */
 .filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 16px; }
@@ -255,7 +255,7 @@ code { font-family: var(--mono); font-size: .92em; background: var(--paper-2); p
 .chip[aria-pressed="true"] { background: var(--ink); color: #fff; border-color: var(--ink); }
 .chip.m[aria-pressed="true"] { background: var(--math); border-color: var(--math); }
 .chip.e[aria-pressed="true"] { background: var(--en); border-color: var(--en); }
-.chip.g[aria-pressed="true"] { background: var(--gram); border-color: var(--gram); }
+.chip.c[aria-pressed="true"] { background: var(--cn); border-color: var(--cn); }
 .chip-sep { width: 1px; height: 22px; background: var(--line-2); margin: 0 4px; }
 
 .search {
@@ -291,7 +291,7 @@ code { font-family: var(--mono); font-size: .92em; background: var(--paper-2); p
 
 .s-M { --s-tone: var(--math); --s-soft: var(--math-soft); }
 .s-E { --s-tone: var(--en); --s-soft: var(--en-soft); }
-.s-G { --s-tone: var(--gram); --s-soft: var(--gram-soft); }
+.s-C { --s-tone: var(--cn); --s-soft: var(--cn-soft); }
 
 .empty { text-align: center; color: var(--muted); padding: 50px 0; }
 
@@ -316,16 +316,47 @@ code { font-family: var(--mono); font-size: .92em; background: var(--paper-2); p
 .goalbox b { font-size: 13px; color: var(--s-tone); display: block; margin-bottom: 4px; letter-spacing: .04em; }
 .goalbox p { margin: 0; font-size: 14.5px; color: var(--ink-2); }
 
+/* ---------- 一句话记住（每页主锚点，先给结论）---------- */
+.keynote {
+  position: relative; margin: 18px 0 8px; padding: 17px 20px 17px 24px;
+  border-radius: 16px; border: 1.5px solid var(--s-tone);
+  background: linear-gradient(135deg, var(--s-soft) 0%, #fff 78%);
+  box-shadow: 0 3px 0 rgba(30, 35, 43, .045);
+}
+.keynote::before {
+  content: ""; position: absolute; left: 0; top: 13px; bottom: 13px;
+  width: 5px; border-radius: 0 4px 4px 0; background: var(--s-tone);
+}
+.keynote-tag {
+  display: inline-block; font-size: 11.5px; font-weight: 800; letter-spacing: .1em;
+  color: #fff; background: var(--s-tone); padding: 3px 10px; border-radius: 999px; margin-bottom: 9px;
+}
+.keynote-txt { font-size: clamp(17px, 2.1vw, 21px); line-height: 1.7; font-weight: 700; color: var(--ink); }
+.keynote-txt b { color: var(--s-tone); }
+
 .prose h2 { font-size: 20px; margin: 30px 0 12px; display: flex; align-items: center; gap: 9px; }
 .prose h2::before {
   content: ""; width: 5px; height: 18px; border-radius: 3px; background: var(--s-tone); flex: none;
+}
+/* 正文小节：自动编号，一眼看清「这是第几个要点」 */
+.body-prose { counter-reset: sec; }
+.body-prose h2 { counter-increment: sec; }
+.body-prose h2::before {
+  content: counter(sec); width: 25px; height: 25px; border-radius: 8px;
+  background: var(--s-tone); color: #fff; font-size: 13.5px; font-weight: 800;
+  display: inline-flex; align-items: center; justify-content: center;
 }
 .prose h3 { font-size: 16px; margin: 20px 0 8px; }
 .prose p { font-size: 15.5px; color: var(--ink-2); }
 .prose ul, .prose ol { font-size: 15.5px; color: var(--ink-2); }
 .prose li::marker { color: var(--s-tone); }
 .prose b, .prose strong { color: var(--ink); }
-.prose .hl { background: linear-gradient(transparent 62%, #ffe9a8 62%); padding: 0 2px; font-weight: 600; }
+/* 关键词：学科色 + 荧光笔底纹，等于替孩子划好了重点 */
+.prose p b, .prose li b, .prose .hl {
+  color: var(--s-tone); font-weight: 700;
+  background: linear-gradient(transparent 66%, var(--s-soft) 66%);
+  padding: 0 1px; border-radius: 2px;
+}
 
 .callout {
   border: 1px solid var(--line); background: var(--card); border-radius: var(--r-md);
@@ -334,8 +365,8 @@ code { font-family: var(--mono); font-size: .92em; background: var(--paper-2); p
 }
 .callout .ico { flex: none; font-size: 15px; line-height: 1.6; }
 .callout b { color: var(--ink); }
-.callout.warn { background: var(--bad-soft); border-color: #f5cdb8; }
-.callout.tip { background: var(--good-soft); border-color: #c6e5d0; }
+.callout.warn { background: var(--bad-soft); border-color: #efc0a6; border-left: 4px solid var(--bad); }
+.callout.tip { background: var(--good-soft); border-color: #b3dcc2; border-left: 4px solid var(--good); }
 .callout p { margin: 0; font-size: 14.5px; }
 
 table.data {
@@ -347,6 +378,7 @@ table.data th, table.data td { padding: 9px 12px; border-bottom: 1px solid var(-
 table.data th { background: var(--paper-2); font-weight: 600; color: var(--ink); font-size: 13px; }
 table.data tr:last-child td { border-bottom: 0; }
 table.data td b { color: var(--s-tone); }
+table.data td:first-child { background: #fdfaf3; font-weight: 600; color: var(--ink); }
 
 /* ---------- 互动实验 ---------- */
 .lab {
@@ -463,9 +495,9 @@ input[type="range"]:disabled { opacity: .45; cursor: not-allowed; }
 
 /* 洞察 & 迁移 */
 .insight {
-  padding: 14px 18px; border-top: 1px dashed var(--line-2);
-  background: var(--good-soft); font-size: 14.5px; color: #14532d;
-  display: none; gap: 10px;
+  padding: 16px 18px; border-top: 1px dashed var(--line-2);
+  background: var(--good-soft); font-size: 15.5px; font-weight: 600; color: #14532d;
+  display: none; gap: 10px; line-height: 1.75;
 }
 .insight.show { display: flex; animation: fade .25s; }
 .insight b { color: #0d3d21; }
@@ -543,7 +575,11 @@ input[type="range"]:disabled { opacity: .45; cursor: not-allowed; }
   transition: border-color .15s, background-color .15s;
 }
 .flip:hover { border-color: var(--s-tone); }
-.flip .f-front { font-size: 14.5px; font-weight: 600; }
+.flip .f-num {
+  position: absolute; top: 10px; right: 12px; font-size: 11px; font-weight: 800;
+  color: var(--faint); letter-spacing: .06em;
+}
+.flip .f-front { font-size: 15px; font-weight: 700; padding-right: 26px; }
 .flip .f-back { font-size: 13.5px; color: var(--ink-2); display: none; }
 .flip.open { background: var(--s-soft); border-color: var(--s-tone); }
 .flip.open .f-back { display: block; }

@@ -245,7 +245,7 @@
   /* ---------- 站点元数据 ---------- */
   XK.SUBJECTS = {
     math: { key: 'math', name: '数学', cls: 'M', tone: 'var(--math)', desc: '从数位到圆面积，把抽象关系变成可以拖动的图。' },
-    english: { key: 'english', name: '英语', cls: 'E', tone: 'var(--en)', desc: 'PEP 教材里的高频句型，用场景练到能开口。' },
-    grammar: { key: 'grammar', name: '语法', cls: 'G', tone: 'var(--gram)', desc: '时态、单复数、句型转换，一条一条理清楚。' }
+    english: { key: 'english', name: '英语', cls: 'E', tone: 'var(--en)', desc: 'PEP 教材里的高频句型与语法，用场景练到能开口。' },
+    chinese: { key: 'chinese', name: '语文', cls: 'C', tone: 'var(--cn)', desc: '读懂句子、抓住重点、把话说清楚，从词句到篇章。' }
   };
 })();

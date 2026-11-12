@@ -1,11 +1,11 @@
 /* ==========================================================================
-   小课桌 · 语法知识点（按 PEP 出现顺序归纳，7 个）
+   小课桌 · 英语语法知识点（按 PEP 出现顺序归纳，7 个，已并入英语学科）
    ========================================================================== */
 window.POINTS = (window.POINTS || []).concat([
 
 /* ------------------------------------------------------------------ 1 */
 {
-  id: 'g4-01', subject: 'grammar', grade: 4, term: '上', unit: '语法专题 · 名词',
+  id: 'g4-01', subject: 'english', grade: 4, term: '上', unit: '语法专题 · 名词',
   title: '名词单复数：加 s 还是加 es',
   tags: ['名词', '复数', '规则变化', '不规则'],
   goal: '能根据词尾判断名词复数加 -s、-es 还是变 y 为 i，并记住常见不规则复数。',
@@ -71,7 +71,7 @@ window.POINTS = (window.POINTS || []).concat([
 
 /* ------------------------------------------------------------------ 2 */
 {
-  id: 'g4-02', subject: 'grammar', grade: 4, term: '下', unit: '语法专题 · 代词',
+  id: 'g4-02', subject: 'english', grade: 4, term: '下', unit: '语法专题 · 代词',
   title: '人称代词与物主代词',
   tags: ['代词', '主格', '宾格', '物主代词'],
   goal: '能分清主格、宾格、形容词性物主代词和名词性物主代词，并选对形式。',
@@ -136,7 +136,7 @@ window.POINTS = (window.POINTS || []).concat([
 
 /* ------------------------------------------------------------------ 3 */
 {
-  id: 'g4-03', subject: 'grammar', grade: 4, term: '上', unit: '语法专题 · be 动词',
+  id: 'g4-03', subject: 'english', grade: 4, term: '上', unit: '语法专题 · be 动词',
   title: 'be 动词：am、is、are 怎么选',
   tags: ['be动词', 'am', 'is', 'are'],
   goal: '能根据主语选对 am / is / are，并正确写出否定句和一般疑问句。',
@@ -199,7 +199,7 @@ window.POINTS = (window.POINTS || []).concat([
 
 /* ------------------------------------------------------------------ 4 */
 {
-  id: 'g5-04', subject: 'grammar', grade: 5, term: '上', unit: '语法专题 · 动词三单',
+  id: 'g5-04', subject: 'english', grade: 5, term: '上', unit: '语法专题 · 动词三单',
   title: '动词第三人称单数',
   tags: ['三单', '一般现在时', 'does', '动词变化'],
   goal: '能在主语是 he / she / it 时把动词变成三单形式，并在否定和疑问句中还原动词原形。',
@@ -262,7 +262,7 @@ window.POINTS = (window.POINTS || []).concat([
 
 /* ------------------------------------------------------------------ 5 */
 {
-  id: 'g5-05', subject: 'grammar', grade: 5, term: '下', unit: '语法专题 · 疑问句',
+  id: 'g5-05', subject: 'english', grade: 5, term: '下', unit: '语法专题 · 疑问句',
   title: '特殊疑问词：问什么用什么',
   tags: ['疑问词', 'what', 'where', 'when', 'who'],
   goal: '能根据划线部分选择合适的疑问词，并写出语序正确的特殊疑问句。',
@@ -328,7 +328,7 @@ window.POINTS = (window.POINTS || []).concat([
 
 /* ------------------------------------------------------------------ 6 */
 {
-  id: 'g6-06', subject: 'grammar', grade: 6, term: '上', unit: '语法专题 · 句型转换',
+  id: 'g6-06', subject: 'english', grade: 6, term: '上', unit: '语法专题 · 句型转换',
   title: '否定句与一般疑问句',
   tags: ['否定句', '一般疑问句', 'do', 'does', 'don\'t'],
   goal: '掌握"有 be 用 be，没 be 借 do/does"的转换方法，能正确改写否定句和一般疑问句。',
@@ -394,7 +394,7 @@ window.POINTS = (window.POINTS || []).concat([
 
 /* ------------------------------------------------------------------ 7 */
 {
-  id: 'g6-07', subject: 'grammar', grade: 6, term: '下', unit: '语法专题 · 语序',
+  id: 'g6-07', subject: 'english', grade: 6, term: '下', unit: '语法专题 · 语序',
   title: '英语句子语序：把词排对',
   tags: ['语序', '陈述句', '疑问句', '句子成分'],
   goal: '掌握"主语 + 谓语 + 其他"的基本语序，能把打乱的单词排成正确的句子。',

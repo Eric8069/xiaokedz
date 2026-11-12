@@ -11,7 +11,7 @@
   var POINTS = (window.POINTS || []).slice();
   var SHEETS = (window.SHEETS || []).slice();
   var SUBJECTS = XK.SUBJECTS;
-  var ORDER = { math: 0, english: 1, grammar: 2 };
+  var ORDER = { math: 0, english: 1, chinese: 2 };
   var DB_KEY = 'xiaokedz.v2';
   var OLD_KEY = 'xiaokedz.progress.v1';
   var SYNC = (XK && XK.sync) ? XK.sync : null;
@@ -413,7 +413,7 @@
     left.appendChild(h('h1', { html: '每个知识点，<br>都能<em>动手试一次</em>。' }));
     left.appendChild(h('p', {
       class: 'lead',
-      html: '先猜一猜结果，再拖动滑块看变化，最后用自己的话解释。数学 15 个、英语 14 个、语法 7 个核心知识点，外加 11 张可打印的一页纸总结。'
+      html: '先猜一猜结果，再拖动滑块看变化，最后用自己的话解释。数学 15 个、英语 21 个、语文 7 个核心知识点，外加 11 张可打印的一页纸总结。'
     }));
     var tags = h('div', { class: 'hero-tags' });
     ['先预测', '再操作', '后解释', '自测 3 题', '自动记录进度'].forEach(function (t) {
@@ -429,7 +429,7 @@
 
     // 科目卡
     var grid = h('div', { class: 'subject-grid' });
-    ['math', 'english', 'grammar'].forEach(function (key) {
+    ['math', 'english', 'chinese'].forEach(function (key) {
       var meta = SUBJECTS[key];
       var list = orderIn(key);
       var card = h('a', { class: 'subject-card sc-' + meta.cls, href: '#/' + key });
@@ -461,7 +461,7 @@
     );
     band.appendChild(txt);
     var bar = h('div', { class: 'pb-bar' });
-    ['math', 'english', 'grammar'].forEach(function (k) {
+    ['math', 'english', 'chinese'].forEach(function (k) {
       var i = h('i', { class: k.charAt(0) });
       i.style.width = pct(doneCount(k), total) + '%';
       bar.appendChild(i);
@@ -661,8 +661,17 @@
     head.appendChild(goal);
     article.appendChild(head);
 
+    // 一句话记住：先给结论，再展开，给记忆一个锚点
+    var memo = p.memorize || (p.figure && p.figure.insight);
+    if (memo) {
+      var kn = h('div', { class: 'keynote' });
+      kn.appendChild(h('div', { class: 'keynote-tag' }, '★ 记住这一句'));
+      kn.appendChild(h('div', { class: 'keynote-txt', html: memo }));
+      article.appendChild(kn);
+    }
+
     // 正文
-    var prose = h('div', { class: 'prose' });
+    var prose = h('div', { class: 'prose body-prose' });
     (p.sections || []).forEach(function (sec, i) {
       if (sec.h) {
         var hh = h('h2', { id: 'sec-' + i }, sec.h);
@@ -732,8 +741,9 @@
       sec.appendChild(h('h2', { class: 'prose', style: 'font-size:20px;margin:34px 0 8px' }, '复习卡片'));
       sec.appendChild(h('p', { style: 'font-size:13px;color:var(--muted)' }, '点一下卡片，看背面。睡前翻一遍，比反复读课本有用。'));
       var cards = h('div', { class: 'cards' });
-      p.cards.forEach(function (c) {
+      p.cards.forEach(function (c, ci) {
         var b = h('button', { type: 'button', class: 'flip', 'aria-pressed': 'false' });
+        b.appendChild(h('span', { class: 'f-num' }, '0' + (ci + 1)));
         b.appendChild(h('span', { class: 'f-tag' }, '点一下翻面'));
         b.appendChild(h('span', { class: 'f-front', html: c.f }));
         b.appendChild(h('span', { class: 'f-back', html: c.b }));
@@ -948,10 +958,16 @@
   }
 
   function metaTone(sub) {
-    return sub === 'math' ? '#2563eb' : sub === 'english' ? '#e0632f' : '#7c3aed';
+    return sub === 'math' ? '#2563eb'
+      : sub === 'english' ? '#e0632f'
+      : sub === 'chinese' ? '#0f766e'
+      : '#6b7280';
   }
   function metaSoft(sub) {
-    return sub === 'math' ? '#e9f0ff' : sub === 'english' ? '#fdeee6' : '#f2ebff';
+    return sub === 'math' ? '#e9f0ff'
+      : sub === 'english' ? '#fdeee6'
+      : sub === 'chinese' ? '#e3f3f0'
+      : '#f0f1f3';
   }
 
   /* ---------- 自测 ---------- */
@@ -1309,7 +1325,7 @@
     var bars = h('div', { class: 'stat' });
     bars.appendChild(h('div', { class: 'l', style: 'margin-bottom:12px;color:var(--ink-2);font-size:13px;font-weight:600' }, '三科进度'));
     var wrap = h('div', { class: 'bars' });
-    ['math', 'english', 'grammar'].forEach(function (k) {
+    ['math', 'english', 'chinese'].forEach(function (k) {
       var meta = SUBJECTS[k];
       var d = doneCount(k), t = totalCount(k);
       var row = h('div', { class: 'bar-row' });
@@ -1392,7 +1408,7 @@
     doc.appendChild(h('ul', {},
       h('li', { html: '数学：人教版（PEP 小学英语同步的人教版数学），按单元顺序整理，覆盖四上至六上高频易错点。' }),
       h('li', { html: '英语：人教版 PEP（三年级起点）四至六年级句型与词汇。' }),
-      h('li', { html: '语法：按 PEP 教材中出现顺序归纳，不与课本单元一一对应。' }),
+      h('li', { html: '语文：按人教版 4-6 年级读写要求整理，覆盖词句、标点、病句、修辞与阅读方法。' }),
       h('li', { html: '河南信阳各区县、各学校进度可能略有差异，<b>以学校课本和老师要求为准</b>。' })
     ));
 
@@ -1456,7 +1472,7 @@
     note.appendChild(h('p', { html: '建议用法：先合上书做题，再翻表对答案；错的那一行用笔圈出来，第二天只看圈。' }));
     main.appendChild(note);
 
-    var groups = [['english', '英语'], ['grammar', '语法'], ['math', '数学']];
+    var groups = [['math', '数学'], ['english', '英语'], ['chinese', '语文']];
     groups.forEach(function (g) {
       var list = SHEETS.filter(function (x) { return x.subject === g[0]; });
       if (!list.length) return;
