@@ -1532,7 +1532,7 @@
     }
 
     (sh.blocks || []).forEach(function (b, i) {
-      var sec = h('section', { class: 'sheet-sec' });
+      var sec = h('section', { class: 'sheet-sec', 'data-band': (i % 4) + 1 });
       if (b.h) {
         var t = h('h2', {}, b.h);
         sec.appendChild(t);
@@ -1547,7 +1547,13 @@
         b.table.rows.forEach(function (row) {
           var tr2 = h('tr');
           row.forEach(function (c, ci) {
-            tr2.appendChild(h('td', { html: ci === 0 ? '<b>' + c + '</b>' : c }));
+            // col-rule：第 2 列（结构 / 规则）走蓝色；col-ex：表头含「例」的列走红色
+            var head = (b.table.head && b.table.head[ci]) || '';
+            var cls = ci === 1 ? 'col-rule' : (/例/.test(head) ? 'col-ex' : '');
+            tr2.appendChild(h('td', {
+              class: cls, 'data-label': head,
+              html: ci === 0 ? '<b>' + c + '</b>' : c
+            }));
           });
           tbody.appendChild(tr2);
         });
@@ -1590,7 +1596,7 @@
     });
 
     if (sh.drill && sh.drill.length) {
-      var dr = h('section', { class: 'sheet-sec drill' });
+      var dr = h('section', { class: 'sheet-sec drill', 'data-band': ((sh.blocks || []).length % 4) + 1 });
       var CN = ['一', '二', '三', '四', '五', '六', '七', '八', '九'];
       dr.appendChild(h('h2', {}, (CN[(sh.blocks || []).length] || '') + '、自测：先做，再对答案'));
       var ol2 = h('ol', { class: 'drill-list' });
