@@ -945,3 +945,154 @@ input[type="range"]:disabled { opacity: .45; cursor: not-allowed; }
   .cloud-card { padding: 16px 14px; }
 }
 @media print { .cloud-card { display: none !important; } }
+
+/* ==========================================================================
+   皮肤 card：卡片手账风（预览皮肤，地址加 ?skin=card 生效）
+   骨架 = 分块卡片 + 圆形编号徽章；配色 = 奶油纸底 + 荧光笔色带
+   只在 .skin-card 下生效，默认站点样式完全不受影响
+   ========================================================================== */
+.skin-card {
+  --paper: #fdf8ee;
+  --paper-2: #f6edda;
+  --card: #fffdf8;
+  --line: #ebdfc8;
+  --line-2: #dbcdb0;
+  --ink: #2c2519;
+  --ink-2: #4d4433;
+  --muted: #7d7159;
+  --faint: #a4997e;
+  background: var(--paper);
+}
+
+/* ---------- 页头：标签式 kicker + 彩色短下划线 ---------- */
+.skin-card .point-head h1 { position: relative; padding-bottom: 14px; }
+.skin-card .point-head h1::after {
+  content: ""; position: absolute; left: 2px; bottom: 0; width: 74px; height: 6px; border-radius: 3px;
+  background: linear-gradient(90deg, var(--s-tone) 0 46%, var(--gold) 46% 100%);
+}
+.skin-card .point-head .kicker {
+  display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: .04em;
+  color: var(--s-tone); background: var(--s-soft);
+  padding: 4px 12px; border-radius: 999px; margin-bottom: 10px;
+}
+.skin-card .goalbox { border-left-width: 5px; border-radius: 0 16px 16px 0; padding: 15px 18px; }
+
+/* ---------- 一句话记住：便签纸 + 胶带 ---------- */
+.skin-card .keynote {
+  margin: 26px 10px 16px; padding: 20px 22px; border: 0;
+  border-radius: 4px 18px 18px 18px;
+  background: #fff2bd;
+  transform: rotate(-.7deg);
+  box-shadow: 3px 6px 18px rgba(150, 110, 30, .16);
+}
+.skin-card .keynote::before {
+  content: ""; position: absolute; top: -12px; left: 50%; margin-left: -40px;
+  width: 80px; height: 24px; border-radius: 2px;
+  background: rgba(255, 250, 233, .9); border: 1px solid rgba(200, 178, 130, .5);
+  transform: rotate(-2.5deg);
+  box-shadow: 0 1px 3px rgba(150, 120, 60, .14), inset 0 1px 0 rgba(255, 255, 255, .95);
+}
+.skin-card .keynote-tag { background: #8a6a1c; color: #fff8e2; }
+.skin-card .keynote-txt { font-size: clamp(16.5px, 2vw, 20px); color: #4a3a13; }
+.skin-card .keynote-txt b { color: #8a5a00; background: rgba(255, 255, 255, .55); padding: 0 2px; border-radius: 3px; }
+
+/* ---------- 正文：每个小节一张卡片 ---------- */
+.skin-card .body-prose { display: flex; flex-direction: column; gap: 15px; }
+.skin-card .sec-card {
+  background: var(--card); border: 1px solid var(--line); border-radius: 18px;
+  padding: 19px 21px 20px;
+  box-shadow: 0 1px 0 rgba(120, 90, 40, .045), 0 10px 26px rgba(120, 90, 40, .055);
+}
+.skin-card .sec-card > *:first-child { margin-top: 0; }
+.skin-card .sec-card > *:last-child { margin-bottom: 0; }
+
+/* 小节标题：荧光笔色带 + 圆形编号徽章，四色轮换 */
+.skin-card .body-prose .sec-card:nth-child(4n+1) h2 { --band: #ffe9a8; }
+.skin-card .body-prose .sec-card:nth-child(4n+2) h2 { --band: #ffdcc4; }
+.skin-card .body-prose .sec-card:nth-child(4n+3) h2 { --band: #cfe9e2; }
+.skin-card .body-prose .sec-card:nth-child(4n+4) h2 { --band: #dbe4ff; }
+.skin-card .body-prose h2 {
+  width: fit-content; max-width: 100%; margin: 0 0 13px;
+  padding: 2px 12px 2px 2px; border-radius: 999px;
+  background: linear-gradient(180deg, transparent 52%, var(--band) 52%);
+  font-size: 19px;
+}
+.skin-card .body-prose h2::before {
+  width: 30px; height: 30px; border-radius: 50%; font-size: 15px;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, .09);
+}
+
+/* 正文排版放宽一档，更像读本 */
+.skin-card .prose p, .skin-card .prose li { font-size: 16px; line-height: 1.9; }
+.skin-card .prose p b, .skin-card .prose li b {
+  background: linear-gradient(transparent 62%, var(--s-soft) 62%);
+  padding: 0 2px;
+}
+
+/* 表格、提示条在卡片里收一点圆角 */
+.skin-card table.data {
+  display: table; width: 100%; white-space: normal; table-layout: auto;
+  border: 1px solid var(--line); border-radius: 12px;
+}
+.skin-card table.data th, .skin-card table.data td {
+  white-space: normal; word-break: break-word; vertical-align: top;
+}
+.skin-card table.data th { background: var(--paper-2); font-size: 13px; }
+.skin-card table.data td:first-child { background: #fdf6e6; }
+.skin-card .callout { border-radius: 13px; margin: 14px 0 0; }
+
+/* ---------- 实验区 ---------- */
+.skin-card .lab {
+  border-radius: 20px; border-color: var(--line-2);
+  box-shadow: 0 1px 0 rgba(120, 90, 40, .05), 0 12px 32px rgba(120, 90, 40, .08);
+}
+.skin-card .lab-head { background: linear-gradient(180deg, #fff4d3, #fffdf8); }
+
+/* ---------- 例题 / 自测 / 复习卡 ---------- */
+.skin-card .example { border-radius: 15px; background: #fff; }
+.skin-card .quiz-item { border-radius: 15px; background: #fff; }
+.skin-card .flip { border-style: dashed; border-radius: 16px; background: #fff; }
+.skin-card .flip:hover { border-style: solid; }
+.skin-card .flip.open { border-style: solid; background: var(--s-soft); }
+.skin-card .side-card { border-radius: 16px; background: var(--card); }
+
+/* ---------- 打印：去掉阴影和旋转 ---------- */
+@media print {
+  .skin-card .sec-card,
+  .skin-card .lab,
+  .skin-card .keynote { box-shadow: none !important; }
+  .skin-card .keynote { transform: none; }
+  .skin-card .keynote::before { display: none; }
+}
+
+@media (max-width: 700px) {
+  /* 表格转成「一行一张小卡」，避免窄屏被截断 */
+  .skin-card table.data { display: block; border: 0; border-radius: 0; background: transparent; }
+  .skin-card table.data thead { display: none; }
+  .skin-card table.data tbody,
+  .skin-card table.data tr,
+  .skin-card table.data td { display: block; width: 100%; }
+  .skin-card table.data tr {
+    border: 1px solid var(--line); border-radius: 12px; background: #fff;
+    padding: 9px 12px; margin-bottom: 9px;
+  }
+  .skin-card table.data tr:last-child { margin-bottom: 0; }
+  .skin-card table.data td { border: 0; padding: 3px 0; }
+  .skin-card table.data td::before {
+    content: attr(data-label); display: block;
+    font-size: 10.5px; letter-spacing: .08em; color: var(--faint); margin-bottom: 1px;
+  }
+  /* 首列当卡片标题，不再重复「条件」这类列名 */
+  .skin-card table.data td:first-child {
+    background: transparent; padding: 0 0 7px;
+    border-bottom: 1px dashed var(--line); margin-bottom: 6px;
+  }
+  .skin-card table.data td:first-child::before { display: none; }
+}
+
+@media (max-width: 620px) {
+  .skin-card .sec-card { padding: 15px 15px 16px; border-radius: 15px; }
+  .skin-card .keynote { margin: 22px 6px 12px; padding: 16px 16px; transform: none; }
+  .skin-card .body-prose h2 { font-size: 17.5px; }
+  .skin-card .body-prose h2::before { width: 26px; height: 26px; font-size: 13.5px; }
+}

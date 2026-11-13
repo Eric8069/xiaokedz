@@ -20,6 +20,11 @@
   var destroyFigure = null;
   var spy = null;
   var pushTimer = null;
+
+  /* 皮肤开关：?skin=card 预览「卡片手账」新样式（确认满意后再设为默认） */
+  if (/(^|[?&])skin=card(&|=|$)/.test(location.search)) {
+    document.body.classList.add('skin-card');
+  }
   var cloudStatusEl = null;
   var syncState = { busy: false, note: '', bad: false, freshCode: null };
 
@@ -673,20 +678,19 @@
     // 正文
     var prose = h('div', { class: 'prose body-prose' });
     (p.sections || []).forEach(function (sec, i) {
-      if (sec.h) {
-        var hh = h('h2', { id: 'sec-' + i }, sec.h);
-        prose.appendChild(hh);
-      }
-      if (sec.p) prose.appendChild(h('p', { html: sec.p }));
+      // 每个小节包一张卡片：默认皮肤下是透明容器，card 皮肤下变成独立卡片
+      var card = h('div', { class: 'sec-card', id: sec.h ? 'sec-' + i : null });
+      if (sec.h) card.appendChild(h('h2', {}, sec.h));
+      if (sec.p) card.appendChild(h('p', { html: sec.p }));
       if (sec.ol) {
         var ol = h('ol');
         sec.ol.forEach(function (t) { ol.appendChild(h('li', { html: t })); });
-        prose.appendChild(ol);
+        card.appendChild(ol);
       }
       if (sec.ul) {
         var ul = h('ul');
         sec.ul.forEach(function (t) { ul.appendChild(h('li', { html: t })); });
-        prose.appendChild(ul);
+        card.appendChild(ul);
       }
       if (sec.table) {
         var tb = h('table', { class: 'data' });
@@ -697,19 +701,24 @@
         sec.table.rows.forEach(function (row) {
           var tr2 = h('tr');
           row.forEach(function (c, ci) {
-            tr2.appendChild(h('td', { html: ci === 0 ? '<b>' + c + '</b>' : c }));
+            tr2.appendChild(h('td', {
+              // data-label 只在 card 皮肤的手机布局里显示（表格转堆叠卡片）
+              'data-label': (sec.table.head && sec.table.head[ci]) || '',
+              html: ci === 0 ? '<b>' + c + '</b>' : c
+            }));
           });
           tbody.appendChild(tr2);
         });
         tb.appendChild(tbody);
-        prose.appendChild(tb);
+        card.appendChild(tb);
       }
       if (sec.note) {
         var nt = h('div', { class: 'callout ' + (sec.note.type === 'warn' ? 'warn' : 'tip') });
         nt.appendChild(h('span', { class: 'ico' }, sec.note.type === 'warn' ? '⚠' : '✓'));
         nt.appendChild(h('p', { html: sec.note.text }));
-        prose.appendChild(nt);
+        card.appendChild(nt);
       }
+      prose.appendChild(card);
     });
     article.appendChild(prose);
 
