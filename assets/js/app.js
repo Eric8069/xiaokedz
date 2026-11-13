@@ -665,6 +665,9 @@
     goal.appendChild(h('p', {}, p.goal));
     head.appendChild(goal);
     article.appendChild(head);
+    // 打印时才显示：学科 · 年级 · 单元，方便纸质归档
+    article.appendChild(h('div', { class: 'print-meta' },
+      meta.name + ' · ' + gradeLabel(p.grade, p.term) + ' · ' + p.unit));
 
     // 一句话记住：先给结论，再展开，给记忆一个锚点
     var memo = p.memorize || (p.figure && p.figure.insight);

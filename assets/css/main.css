@@ -1215,3 +1215,94 @@ input[type="range"]:disabled { opacity: .45; cursor: not-allowed; }
   }
   .skin-card .sheet table.data td:first-child::before { display: none; }
 }
+
+/* ==========================================================================
+   三科色族：同一学科共用色相族，科内四色形成节奏
+   数学=蓝族 / 英语=橙族 / 语文=青族，每族第 3 色给一个暖色停顿
+   浅色带 + 深色括号；黑白打印时仍靠编号徽章、卡片边框、括号形状分级
+   ========================================================================== */
+/* 数学 · 蓝族 */
+.skin-card .s-M .sec-card:nth-child(4n+1) h2,
+.skin-card .s-M .sheet-sec[data-band="1"] { --band: #d7e6ff; --brace: #2563eb; }
+.skin-card .s-M .sec-card:nth-child(4n+2) h2,
+.skin-card .s-M .sheet-sec[data-band="2"] { --band: #cbe9f7; --brace: #0369a1; }
+.skin-card .s-M .sec-card:nth-child(4n+3) h2,
+.skin-card .s-M .sheet-sec[data-band="3"] { --band: #ffe8b0; --brace: #b8860b; }
+.skin-card .s-M .sec-card:nth-child(4n+4) h2,
+.skin-card .s-M .sheet-sec[data-band="4"] { --band: #e0e4ff; --brace: #4338ca; }
+
+/* 英语 · 橙族 */
+.skin-card .s-E .sec-card:nth-child(4n+1) h2,
+.skin-card .s-E .sheet-sec[data-band="1"] { --band: #ffe0c4; --brace: #c2410c; }
+.skin-card .s-E .sec-card:nth-child(4n+2) h2,
+.skin-card .s-E .sheet-sec[data-band="2"] { --band: #ffeeb5; --brace: #a16207; }
+.skin-card .s-E .sec-card:nth-child(4n+3) h2,
+.skin-card .s-E .sheet-sec[data-band="3"] { --band: #ffd8cf; --brace: #be123c; }
+.skin-card .s-E .sec-card:nth-child(4n+4) h2,
+.skin-card .s-E .sheet-sec[data-band="4"] { --band: #fde8cf; --brace: #b45309; }
+
+/* 语文 · 青族 */
+.skin-card .s-C .sec-card:nth-child(4n+1) h2,
+.skin-card .s-C .sheet-sec[data-band="1"] { --band: #cfe9e2; --brace: #0f766e; }
+.skin-card .s-C .sec-card:nth-child(4n+2) h2,
+.skin-card .s-C .sheet-sec[data-band="2"] { --band: #d8efd9; --brace: #15803d; }
+.skin-card .s-C .sec-card:nth-child(4n+3) h2,
+.skin-card .s-C .sheet-sec[data-band="3"] { --band: #ffe8b0; --brace: #b8860b; }
+.skin-card .s-C .sec-card:nth-child(4n+4) h2,
+.skin-card .s-C .sheet-sec[data-band="4"] { --band: #d6e8f2; --brace: #0369a1; }
+
+/* 打印专用元信息：平时隐藏，打印时显示在学生手里那一页的顶部 */
+.print-meta {
+  display: none; margin: 8px 0 0; font-size: 12px;
+  color: var(--muted); letter-spacing: .03em;
+}
+
+/* ==========================================================================
+   打印：一页一个知识点，区块不跨页切断，界面元素全部隐藏
+   ========================================================================== */
+@media print {
+  .skin-card .topbar,
+  .skin-card .foot,
+  .skin-card .side,
+  .skin-card .pager,
+  .skin-card .crumb,
+  .skin-card .drawer,
+  .skin-card .skip,
+  .skin-card .nav,
+  .skin-card .sheet-tools,
+  .skin-card .lab-hint { display: none !important; }
+
+  .skin-card .wrap { max-width: none; margin: 0; padding: 0; }
+  .skin-card .point-layout { display: block; }
+  .skin-card { background: #fff !important; }
+
+  .skin-card .sec-card,
+  .skin-card .lab,
+  .skin-card .example,
+  .skin-card .quiz-item,
+  .skin-card .flip,
+  .skin-card .sheet-sec,
+  .skin-card .vs-card,
+  .skin-card .callout,
+  .skin-card .drill-list li { break-inside: avoid; }
+
+  .skin-card h1, .skin-card h2, .skin-card h3 { break-after: avoid; }
+
+  .skin-card .sec-card,
+  .skin-card .lab,
+  .skin-card .example,
+  .skin-card .quiz-item,
+  .skin-card .flip,
+  .skin-card .side-card {
+    box-shadow: none !important;
+    border-color: #cfc6b3 !important;
+  }
+
+  .skin-card .keynote { transform: none; }
+  .skin-card .keynote::before { display: none; }
+  .skin-card .point-head .kicker { display: none; }
+  .skin-card .print-meta { display: block !important; }
+
+  .skin-card .lab-body.locked .stage,
+  .skin-card .lab-body.locked .lab-side { opacity: 1; filter: none; }
+}
