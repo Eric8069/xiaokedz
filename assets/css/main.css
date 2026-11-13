@@ -215,6 +215,23 @@ code { font-family: var(--mono); font-size: .92em; background: var(--paper-2); p
 .sc-list a span { font-size: 11px; color: var(--faint); font-variant-numeric: tabular-nums; flex: none; }
 .sc-go { margin-top: auto; font-size: 13.5px; font-weight: 600; color: var(--tone); display: flex; align-items: center; gap: 6px; }
 
+/* 学科色族色板：首页先建立颜色联想，进到页面里才不会觉得「换了个站」 */
+.sc-palette { display: flex; gap: 3px; margin: 0 0 12px; }
+.sc-palette i { display: block; flex: 1; height: 5px; border-radius: 3px; }
+/* 首页色板用「饱和版」，页面内色带用「浅色版」：同色相不同深度，形成对应 */
+.sc-M .sc-palette i:nth-child(1) { background: #93c5fd; }
+.sc-M .sc-palette i:nth-child(2) { background: #7dd3fc; }
+.sc-M .sc-palette i:nth-child(3) { background: #fcd34d; }
+.sc-M .sc-palette i:nth-child(4) { background: #a5b4fc; }
+.sc-E .sc-palette i:nth-child(1) { background: #fdba74; }
+.sc-E .sc-palette i:nth-child(2) { background: #fde047; }
+.sc-E .sc-palette i:nth-child(3) { background: #fda4af; }
+.sc-E .sc-palette i:nth-child(4) { background: #fed7aa; }
+.sc-C .sc-palette i:nth-child(1) { background: #5eead4; }
+.sc-C .sc-palette i:nth-child(2) { background: #86efac; }
+.sc-C .sc-palette i:nth-child(3) { background: #fbcfe8; }
+.sc-C .sc-palette i:nth-child(4) { background: #7dd3fc; }
+
 /* ---------- 首页模块 ---------- */
 .sec-head { display: flex; align-items: baseline; gap: 12px; margin: 0 0 14px; }
 .sec-head h2 { font-size: 20px; margin: 0; }
@@ -278,6 +295,11 @@ code { font-family: var(--mono); font-size: .92em; background: var(--paper-2); p
   transition: transform .16s, box-shadow .16s, border-color .16s;
 }
 .pcard:hover { transform: translateY(-2px); box-shadow: var(--shadow-2); border-color: var(--line-2); }
+/* 列表页：卡片顶部的学科色书签条 */
+.pcard::before {
+  content: ""; position: absolute; top: 0; left: 14px; right: 14px; height: 3px;
+  border-radius: 0 0 3px 3px; background: var(--s-tone);
+}
 .pcard-top { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 .badge {
   font-size: 11.5px; font-weight: 600; padding: 3px 8px; border-radius: 6px;
@@ -1241,13 +1263,13 @@ input[type="range"]:disabled { opacity: .45; cursor: not-allowed; }
 .skin-card .s-E .sec-card:nth-child(4n+4) h2,
 .skin-card .s-E .sheet-sec[data-band="4"] { --band: #fde8cf; --brace: #b45309; }
 
-/* 语文 · 青族 */
+/* 语文 · 青族（暖色停顿用暖粉，与数学的黄、英语的珊瑚区分开） */
 .skin-card .s-C .sec-card:nth-child(4n+1) h2,
 .skin-card .s-C .sheet-sec[data-band="1"] { --band: #cfe9e2; --brace: #0f766e; }
 .skin-card .s-C .sec-card:nth-child(4n+2) h2,
 .skin-card .s-C .sheet-sec[data-band="2"] { --band: #d8efd9; --brace: #15803d; }
 .skin-card .s-C .sec-card:nth-child(4n+3) h2,
-.skin-card .s-C .sheet-sec[data-band="3"] { --band: #ffe8b0; --brace: #b8860b; }
+.skin-card .s-C .sheet-sec[data-band="3"] { --band: #ffe0e6; --brace: #be123c; }
 .skin-card .s-C .sec-card:nth-child(4n+4) h2,
 .skin-card .s-C .sheet-sec[data-band="4"] { --band: #d6e8f2; --brace: #0369a1; }
 

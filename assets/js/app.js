@@ -418,7 +418,7 @@
     left.appendChild(h('h1', { html: '每个知识点，<br>都能<em>动手试一次</em>。' }));
     left.appendChild(h('p', {
       class: 'lead',
-      html: '先猜一猜结果，再拖动滑块看变化，最后用自己的话解释。数学 15 个、英语 21 个、语文 7 个核心知识点，外加 11 张可打印的一页纸总结。'
+      html: '先猜一猜结果，再拖动滑块看变化，最后用自己的话解释。数学 15 个、英语 21 个、语文 7 个核心知识点，外加 13 张可打印的一页纸总结。'
     }));
     var tags = h('div', { class: 'hero-tags' });
     ['先预测', '再操作', '后解释', '自测 3 题', '自动记录进度'].forEach(function (t) {
@@ -443,6 +443,10 @@
         h('b', {}, meta.name),
         h('span', { class: 'sc-count' }, list.length + ' 个知识点')
       ));
+      // 学科色族色板：首页就建立「这一科是什么颜色」的联想
+      var pal = h('div', { class: 'sc-palette', 'aria-hidden': 'true' });
+      for (var pi = 0; pi < 4; pi++) pal.appendChild(h('i'));
+      card.appendChild(pal);
       card.appendChild(h('p', {}, meta.desc));
       var ul = h('div', { class: 'sc-list' });
       list.slice(0, 3).forEach(function (p) {
