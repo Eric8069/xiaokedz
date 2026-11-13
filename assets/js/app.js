@@ -21,8 +21,10 @@
   var spy = null;
   var pushTimer = null;
 
-  /* 皮肤开关：?skin=card 预览「卡片手账」新样式（确认满意后再设为默认） */
-  if (/(^|[?&])skin=card(&|=|$)/.test(location.search)) {
+  /* 皮肤：卡片手账样式为全站默认。
+     保留一个回退开关：?skin=classic 可临时切到旧版做对比，不影响正常访问。
+     旧的 ?skin=card 链接依然有效（默认即新样式）。 */
+  if (!/(^|[?&])skin=classic(&|=|$)/.test(location.search)) {
     document.body.classList.add('skin-card');
   }
   var cloudStatusEl = null;
@@ -544,8 +546,8 @@
       '<rect x="232" y="96" width="104" height="72" rx="10" fill="#fff" stroke="#e7e1d6"/>' +
       '<text x="248" y="122" font-size="12" fill="#9aa1ab" font-family="sans-serif">3.56 × 10</text>' +
       '<text x="248" y="148" font-size="19" font-weight="700" fill="#e0632f" font-family="sans-serif">35.6</text>' +
-      '<rect x="196" y="196" width="176" height="46" rx="23" fill="#f2ebff" stroke="#7c3aed"/>' +
-      '<text x="218" y="225" font-size="12.5" fill="#7c3aed" font-family="sans-serif">There are 3 books.</text>' +
+      '<rect x="196" y="196" width="176" height="46" rx="23" fill="#fff1e7" stroke="#e0632f"/>' +
+      '<text x="218" y="225" font-size="12.5" fill="#b4431a" font-family="sans-serif">There are 3 books.</text>' +
       '<circle cx="86" cy="252" r="7" fill="#f2b705"/>' +
       '<circle cx="300" cy="64" r="5" fill="#e0632f"/>' +
       '</svg>';
@@ -1344,7 +1346,7 @@
     ['math', 'english', 'chinese'].forEach(function (k) {
       var meta = SUBJECTS[k];
       var d = doneCount(k), t = totalCount(k);
-      var row = h('div', { class: 'bar-row' });
+      var row = h('div', { class: 'bar-row bar-' + k });
       row.appendChild(h('span', { class: 'nm' }, meta.name));
       var tr = h('div', { class: 'tr' });
       var i = h('i');

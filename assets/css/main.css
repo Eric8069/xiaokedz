@@ -1328,3 +1328,11 @@ input[type="range"]:disabled { opacity: .45; cursor: not-allowed; }
   .skin-card .lab-body.locked .stage,
   .skin-card .lab-body.locked .lab-side { opacity: 1; filter: none; }
 }
+
+/* 「我的学习」三科进度条：即使 0% 也有学科色锚点，与首页色板呼应 */
+.skin-card .bars .bar-math .tr { background: #e9f0ff; }
+.skin-card .bars .bar-english .tr { background: #fdeee6; }
+.skin-card .bars .bar-chinese .tr { background: #e3f3f0; }
+.skin-card .bars .bar-math .vl { color: var(--math); font-weight: 600; }
+.skin-card .bars .bar-english .vl { color: var(--en); font-weight: 600; }
+.skin-card .bars .bar-chinese .vl { color: var(--cn); font-weight: 600; }
